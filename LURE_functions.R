@@ -756,7 +756,8 @@ runClassifier_V2<- function(X, Y, nfolds_input, iterations, alpha, weighted, str
   nfolds<-min(max(3,nfolds_input),sum(Y==1),sum(Y==0))
   print(paste("Performing cross-validation using",nfolds,"folds"))
   print(paste("Alpha set to:",alpha,"(1=LASSO; fast; less coefficients, 0=Ridge Regression; slow; all coefficients)"))
-  # create weights, weights are a fraction of the pos/neg over the total number of labels
+  # create weights, weights are 1 minus the fraction of the pos or neg over the total number of labels.  
+  # Basically smaller classes are given proportionally bigger weights
   fraction_0<-rep(1-sum(Y==0)/nrow(Y),sum(Y==0))
   fraction_1<-rep(1-sum(Y==1)/nrow(Y),sum(Y==1))
   # assign 1 - that value to a "weights" vector

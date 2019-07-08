@@ -1,3 +1,10 @@
+## LURE_functions.R
+## David Haan 2015-2019
+## Functions associated with LURE and other projects
+
+
+
+
 list.of.packages <- c("glmnet", "plyr","matrixStats","data.table","methods","doMC","tools","dplyr","PRROC","ggplot2","optparse","RcppGreedySetCover","igraph","survminer","survival")
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) {
@@ -10,7 +17,7 @@ if(length(new.packages)) {
 lapply(list.of.packages, require, character.only = TRUE)
 
 
-#### ---- FUNCTIONS
+#### --- LURE FUNCTIONS
 LURE<-function(bait_gene,
                gmt_file,
                feature_data,
@@ -108,6 +115,7 @@ LURE<-function(bait_gene,
     return()
   } 
   
+  # Run logistic regression classifier
   initial_bait_model<-runClassifier_V2(full_set_XY$X,full_set_XY$Y,folds,num_permutations,alpha=1,weighted = TRUE,stratified = TRUE)
   
   print(paste("ORIGINAL PR AUC:",mean(initial_bait_model$pr_auc)))
@@ -126,11 +134,10 @@ LURE<-function(bait_gene,
   }
   pred_resp<-sort(pred_resp,decreasing = TRUE)
   
-  # here we make a pdf plot of the initial predictions
+  # make a pdf plot of the initial predictions
   scores_labels<-data.frame("Sample_Names"=names(pred_resp), "Classifier_Score"=pred_resp, "Color"="black",stringsAsFactors = FALSE)
   scores_labels$Color[(scores_labels$Classifier_Score > .5)]<-"red"
-  scores_labels$Color[(scores_labels$Classifier_Score > .5)]<-"red"
-  
+
   scores_labels$Sample_Names<-factor(scores_labels$Sample_Names, levels=scores_labels$Sample_Names[order(scores_labels$Classifier_Score, decreasing=TRUE)])
   positive_samples<-length(scores_labels$Classifier_Score[scores_labels$Classifier_Score>.5])
   pdf(paste0(PANCAN_DATA,output_file_prefix,"_Initial_Classifier_Scores_",positive_samples,"_positive_",round(mean(initial_bait_model$pr_auc),2),"_AUC_",tissue,"_",bait_gene,".pdf"),onefile = FALSE,width=8,height = 5)
@@ -193,7 +200,7 @@ LURE<-function(bait_gene,
                                         folds=folds, 
                                         enrichment_analysis_only=FALSE)
   }
-  
+  # LURE iterative analysis is done, now processing the results
   
   # IF ENRICHMENT ONLY ANALYSIS
   if (enrichment_analysis_only==TRUE) {
@@ -212,7 +219,7 @@ LURE<-function(bait_gene,
     write.csv(initial_bait_model$pr_auc,file=filename7)
     write.csv(coef(initial_bait_model, s = mean(initial_bait_model$min_lambda)),file=filename8)
     
-    #create oncoprint pdf using yanni's function
+    # Create output files for Yanni's oncoprint plot Python function
     #load gmt_file
     if (nrow(results)>0) {
       write.table(results,file=filename1,quote=FALSE,sep="\t",col.names = FALSE,row.names = FALSE)
@@ -220,7 +227,6 @@ LURE<-function(bait_gene,
       no_col <- max(count.fields(paste0(DD_HOME,gmt_file), sep = "\t"))
       gmt_file_data <- read.table(paste0(DD_HOME,gmt_file),sep="\t",fill=TRUE,header = F,col.names=1:no_col,stringsAsFactors = FALSE)
       
-      #gmt_file_data$X1<-toupper(gsub("_","",gmt_file_data$X1))
       gene_list<-c(bait_gene,rownames(results))
       oncoprint_mutation_data<-data.frame(matrix(NA,ncol=nrow(oncogene_neg_expression_data),nrow=length(gene_list)))
       colnames(oncoprint_mutation_data)<-names(pred_resp)
@@ -247,8 +253,9 @@ LURE<-function(bait_gene,
     
   } # end of ENRICHMENT_ONLY LOOP
   
-  ################################################################################################ 
-  # ENRICHMENT ONLY IS FALSE, RUNNING SET COVERAGE ON RESULTS
+  #  
+  # ENRICHMENT ONLY IS FALSE, Running full LURE and set coverage 
+  #
   else {
     
     filename_gene<-gsub("\\(","_",bait_gene)
@@ -272,11 +279,7 @@ LURE<-function(bait_gene,
       write.table(tree_path_list,file=filename1,quote=FALSE,sep="\t",col.names = FALSE,row.names = FALSE)
       return()
     }
-    # output files for viewing cytoscape
-    tree_path_list<-ldply(tree_path_list, rbind)
-    write.table(tree_path_list,file=filename1,quote=FALSE,sep="\t",col.names = FALSE,row.names = FALSE)
-    write.table(STG_output,file=filename2,quote=FALSE,sep="\t",row.names = FALSE)
-    
+
     # create classifier using all of the new catches and original bait
     positive_set<-c()
     gene<-gene_list[1]
@@ -294,21 +297,25 @@ LURE<-function(bait_gene,
     final_set_XY$Y$sample<-0
     final_set_XY$Y$sample[which(rownames(final_set_XY$Y) %in% positive_set)]<-1
     
-    
+    # run logistic regression classifier
     initial_model<-runClassifier_V2(final_set_XY$X,final_set_XY$Y,nfolds_input=folds,iterations=num_permutations,alpha=1,weighted = TRUE,stratified = TRUE)
     
     print(paste("NEW CATCH PR AUC:",mean(initial_model$pr_auc)))
     print(paste("NEW CATCH PRECISION:",mean(initial_model$precision)))
     print(paste("NEW CATCH RECALL:",mean(initial_model$recall)))
     
+    # Score the samples using new classifier
     classifier_scores<-((predict(initial_model$model, s=min((initial_model$min_lambda)[which(initial_model$pr_auc==max(initial_model$pr_auc))]), newx=data.matrix(final_set_XY$X), type="response")))[,1]
     classifier_scores<-classifier_scores[order(classifier_scores,decreasing = TRUE)]
-    
+
+    # shorten bait gene size, just for filename output    
     bait_gene_for_filename<-substr(bait_gene,1,200)
-    #write.csv(classifier_scores,file=paste0(PANCAN_DATA,"new_catch_classifier_scores_",tissue,"_",gsub("\\|","_",bait_gene_for_filename),".csv"),quote=FALSE)
-    
+
+    # load GMT data file
     no_col <- max(count.fields(paste0(DD_HOME,gmt_file), sep = "\t"))
     gmt_file_data <- read.table(paste0(DD_HOME,gmt_file),sep="\t",fill=TRUE,header = F,col.names=1:no_col,stringsAsFactors = FALSE)
+    
+    # create mutation matrix
     oncoprint_mutation_data<-data.frame(matrix(NA,ncol=length(classifier_scores),nrow=length(gene_list)))
     colnames(oncoprint_mutation_data)<-names(classifier_scores)
     gene_list_for_df<-c()
@@ -355,7 +362,7 @@ LURE<-function(bait_gene,
     df_output<-greedySetCover(bipartite_data, data.table = FALSE)
     set_coverage_solution<-toupper(gene_list[(toupper(gene_list) %in% unique(as.character(df_output$X1)))])
     not_in_set_coverage_solution<-unique(bipartite_data$X1[!(bipartite_data$X1 %in% set_coverage_solution)])
-    print(set_coverage_solution)
+    print(paste0("Set Coverage Solution:",set_coverage_solution))
     
     # check to see if bait gene is in the solution
     if (!(toupper(bait_gene) %in% set_coverage_solution)) {
@@ -365,19 +372,16 @@ LURE<-function(bait_gene,
     # make bipartite graph with shaded samples 
     g<-graph_from_data_frame(data.frame(bipartite_data), directed=FALSE)
     
-    V(g)$type <- bipartite_mapping(g)$type
-    V(g)$shape <- ifelse(V(g)$type, "circle", "square")
+    V(g)$type<-bipartite_mapping(g)$type
+    V(g)$shape<-ifelse(V(g)$type, "circle", "square")
     V(g)$label.dist<-2
     V(g)$label.degree<-ifelse(V(g)$type, pi/2, 3*pi/2)
-    
-    
     # node/vertex color
     V(g)$color <-ifelse(V(g)$type, "#E69F00","#E69F00")
     # set the vertex and edge color to red for those not in the covered set 
     V(g)$color[which(vertex_attr(g)$name %in% not_in_set_coverage_solution)] <- "red"
     E(g)$color<-"grey"
     E(g)$color[which(!(bipartite_data$X1 %in% set_coverage_solution))]<-"red"
-    
     # remove (change color to white) for the sample names
     V(g)$label.color<-ifelse(V(g)$type, "#FFFFFF","black")
     
@@ -396,8 +400,7 @@ LURE<-function(bait_gene,
     vertex_attr(g)$name<-gsub("TRUNCATING","TRUNC",vertex_attr(g)$name)
     vertex_attr(g)$name<-gsub("MISSENSE","MISS",vertex_attr(g)$name)
     
-    
-    
+    # output bipartite graph for viewing
     pdf(paste0(PANCAN_DATA,tissue,"_",gsub("\\|","_",bait_gene_for_filename),"_bipartite.pdf"))
     #print(plot(g, layout=layout.bipartite, vertex.size=7, vertex.label.cex=0.5, vertex.label.color = "black"))
     print(plot(g, layout=coords, vertex.size=10, vertex.label.cex=0.5, asp = 0.75) +
@@ -451,48 +454,52 @@ LURE<-function(bait_gene,
     write.csv(initial_bait_model$pr_auc,file=filename7)
     write.csv(new_model$pr_auc,file=filename8)
     
-    
-    
-    #setwd(PANCAN_DATA)
-    #system(paste0("python3 ",SCRIPTS,"oncoprint.py -memo -c V38_TCGA_SARC_set_cover_classifier_scores_2019_05_13_13_44_mutation_specific_cytoband_fusion_2_12_2019_ATRX_truncating__expression.tsv -m V38_TCGA_SARC_set_cover_mutation_matrix_2019_05_13_13_44_mutation_specific_cytoband_fusion_2_12_2019_ATRX_truncating__expression.tsv -o ~/output.pdf"))
-    
     # print oncoprint using yanni's oncoprint plot:
     system(paste0("python3 ",SCRIPTS,"oncoprint.py -memo -c ",filename4," -m ",filename5," -o ",filename6))
     
-    
-    
-    
-    
   } # END OF SET COVERAGE LOOP
-  
-  
-  
-  
   
 } # END OF LURE FUNCTION
 
-positive_recursive_iterate<-function(bait, pred_resp, tree_path, gmt_file, X, origY, orig_score_vector, num_permutations, num_events, percent_overlap, pvalue_threshold, min_gene_set_size, gsea_pvalue_threshold, gsea_fdr_threshold,tree_length,max_tree_length, folds, enrichment_analysis_only) {
+
+# This is the core function in the LURE Method
+# It is a recursive function, the bait gene is essentially the base case
+# At each node/iteration the KS test (GSEA preranked) is ran and this function is called on every event
+# Most variables are just passed through from LURE function, please read LURE function for details
+# tree_path is an internal variable that keeps track of each individual path.  
+#   : Consider it a stack variable that is pushed new leaves to go down the tree and pops off leaves to back up the tree
+#   : Set it initially to the starting oncogene
+# tree_path_list is an external variable which is a list of the tree paths.  At the bottom of each tree, the current tree_path
+
+positive_recursive_iterate<-function(bait, # name of gene
+                                     pred_resp, # sample classifier scores
+                                     tree_path, # current tree path
+                                     gmt_file, # gmt file (mutation data)
+                                     X, # feature file
+                                     origY, # original labels
+                                     orig_score_vector, # original CV test scores
+                                     num_permutations, # number of permutations/iterations to run classifier
+                                     num_events, # number of maximum events
+                                     percent_overlap, # max percent of overlap allowed
+                                     pvalue_threshold, 
+                                     min_gene_set_size, 
+                                     gsea_pvalue_threshold, 
+                                     gsea_fdr_threshold,
+                                     tree_length,
+                                     max_tree_length, 
+                                     folds, # CV folds
+                                     enrichment_analysis_only) {
   print(paste0("Tree Length:",tree_length))
+  # Run the GSEA Preranked Analysis to identify enriched events in high scored samples
   results<-run_gsea_V2(bait, gmt_file, X, origY, pred_resp, orig_score_vector=orig_score_vector, num_permutations, num_events=num_events, pvalue_threshold=pvalue_threshold, min_gene_set_size=min_gene_set_size,gsea_pvalue_threshold=gsea_pvalue_threshold, gsea_fdr_threshold=gsea_fdr_threshold, percent_overlap, folds = folds, enrichment_analysis_only=enrichment_analysis_only)
   
+  # if enrichment analysis only is set to TRUE, then we do NOT run the LURE recursive process.  
+  # We are returning the initial set of results
   if (enrichment_analysis_only==TRUE) {
     print("Enrichment Analysis Only...Returning results now")
     return(results)
   }
-  #iteration_events<-run_gsea(gmt_file, "pos",X,origY,test, "LGG", pos_resp, .8, 10, num_iterations, 25, .05)  
-  # OUTPUT FROM RUN GSEA:
-  #result_output<-rbind(result_output,data.frame("bait"=bait
-  #                                            "event"=event_sample_names$event[row],
-  #                                              "sample_names"=event_sample_names$samples[row],
-  #                                              "actual_vs_random_pvalue"=actual_vs_random_pvalue,
-  #                                              "actual_vs_orig_pvalue"=actual_vs_orig_pvalue,
-  #                                              "pr_auc_score"=paste(actual_model$pr_auc,collapse=" "),
-  #                                              "mean_lambda"=actual_model$lambda.min,
-  #                                              "pvalue_over_random"=actual_vs_random$p.value,
-  #                                              "pvalue_over_orig"=actual_vs_orig$p.value,
-  
-  
-  
+  # Check for results and if there are results, call the add event to positive class and re-run function
   if ((nrow(results$df_results) > 0) && (tree_length < max_tree_length)) {
     print(paste("Number of Events to analyze:",nrow(results$df_results)))
     i<-1  
@@ -541,7 +548,7 @@ positive_recursive_iterate<-function(bait, pred_resp, tree_path, gmt_file, X, or
                             "pr_auc"=mean(pr_auc_scores))
       assign("STG_output", rbind(STG_output,df_output), envir = .GlobalEnv)
       
-      #positive_recursive_iterate<-function(pred_resp, tree_path, gmt_file, X, origY, orig_score_vector, num_permutations) {
+      # call recursive function
       positive_recursive_iterate(bait=gene,
                                  pred_resp=new_pred_resp,
                                  tree_path=tree_path, 
@@ -563,7 +570,7 @@ positive_recursive_iterate<-function(bait, pred_resp, tree_path, gmt_file, X, or
       )
       tree_path<-head(tree_path,-1)
       tree_length<-tree_length-1
-    } # end of for loop
+    } # end of event for loop
   } else {
     # base case
     print("Bottom of Tree or Max Tree Length achieved")
@@ -574,7 +581,9 @@ positive_recursive_iterate<-function(bait, pred_resp, tree_path, gmt_file, X, or
 }
 
 
-
+# createXY_gmt
+# creates X and Y variables, the features(X) and labels(Y)
+# function takes a gene name, matches it to the gene name in the gmt file and gets the sample names
 createXY_gmt<- function(gene_name_mutation_type, gmt_file_data, expression_file, pos_set) {
   NA_pos_set<-""
   if (is.na(pos_set[1])) {
@@ -596,10 +605,7 @@ createXY_gmt<- function(gene_name_mutation_type, gmt_file_data, expression_file,
   #     return(list("X" = NA, "Y" = NA,"test" = NA, "X_total" = NA, "X_pos_num" = NA))
   #   }
   # }
-  
-  
-  
-  
+
   # load negative training expression data for A
   neg_set<-row.names(expression_file)[!(row.names(expression_file) %in% pos_set)]
   X_neg<-expression_file[(row.names(expression_file) %in% neg_set) , ,drop=FALSE]
@@ -631,117 +637,16 @@ createXY_gmt<- function(gene_name_mutation_type, gmt_file_data, expression_file,
 }
 
 
-#mutation_file<-mutation_data
-#expression_file<-expression_data
-#XY<-createXY_pos(gene_name, TERT_mutant_file, pcawg_exp)
-#pos_set<-NA
-#gene_name<-"TP53"
-createXY_pos<- function(gene_name, mutation_file, expression_file, pos_set, mutation_type, cnv_data, fusion_data, pcawg_mutation_data) {
-  NA_pos_set<-""
-  # CREATE X AND Y 
-  if (is.na(pos_set[1])) {
-    NA_pos_set<-NA
-    if (is.na(mutation_type)) {
-      pos_set<-unique(mutation_file$Tumor_Sample_Barcode[which(mutation_file$Hugo_Symbol %in% gene_name & !(mutation_file$Variant_Classification %in% c("Intron","Silent","3'UTR","5'UTR","3'Flank","5'Flank","IGR")))])
-    } else {
-      if (mutation_type=="SNV")
-        pos_set<-unique(mutation_file$Tumor_Sample_Barcode[which(mutation_file$Hugo_Symbol %in% gene_name & (mutation_file$Variant_Classification %in% c("Missense_Mutation","Nonsense_Mutation","Frame_Shift_Del","Frame_Shift_Ins","Nonstop_Mutation")))])
-      else if (toupper(mutation_type)=="MISSENSE")
-        pos_set<-unique(mutation_file$Tumor_Sample_Barcode[which(mutation_file$Hugo_Symbol %in% gene_name & (mutation_file$Variant_Classification %in% c("Missense_Mutation")))])
-      else if (toupper(mutation_type)=="TRUNCATING")
-        pos_set<-unique(mutation_file$Tumor_Sample_Barcode[which(mutation_file$Hugo_Symbol %in% gene_name & (mutation_file$Variant_Classification %in% c("Nonsense_Mutation","Frame_Shift_Del","Frame_Shift_Ins","Nonstop_Mutation")))])
-      else if (toupper(mutation_type)=="SPLICESITE")
-        pos_set<-unique(mutation_file$Tumor_Sample_Barcode[which(mutation_file$Hugo_Symbol %in% gene_name & (mutation_file$Variant_Classification %in% c("Splice_Site")))])
-      else if (toupper(mutation_type)=="SPLICE")
-        pos_set<-unique(mutation_file$Tumor_Sample_Barcode[which(mutation_file$Hugo_Symbol %in% gene_name & (mutation_file$Variant_Classification %in% c("Splice_Site")))])
-      else if (toupper(mutation_type)=="AMP") {
-        #sample_names<-colnames(cnv_data)[2:length(colnames(cnv_data))] 
-        #colnames(cnv_data)[2:length(colnames(cnv_data))]<-gsub("-",".",strtrim(sample_names,12))
-        gene_data<-cnv_data[which(toupper(cnv_data$`Gene Symbol`) == toupper(gene_name)), ]
-        pos_set<-unique(colnames(gene_data)[which(gene_data %in% c(2))])
-      }
-      else if (toupper(mutation_type)=="DEL") {
-        print("Deletion Event")
-        #sample_names<-colnames(cnv_data)[2:length(colnames(cnv_data))] 
-        #colnames(cnv_data)[2:length(colnames(cnv_data))]<-gsub("-",".",strtrim(sample_names,12))
-        gene_data<-cnv_data[which(toupper(cnv_data$`Gene Symbol`) == toupper(gene_name)), ]
-        pos_set<-unique(colnames(gene_data)[which(gene_data %in% c(-2))])
-      }
-      else if (toupper(mutation_type)=="FUSION") {
-        print("Fusion Event")
-        sample_names<-as.character(fusion_data[which(toupper(fusion_data$X1) == toupper(gene)),3:ncol(fusion_data)])
-        pos_set<-sample_names[!(sample_names=="")]
-      }
-      else if (toupper(mutation_type)=="3UTR") {
-        full_gene_name<-paste0(gene_name,"(",mutation_type,")")
-        pos_set<-as.character(pcawg_mutation_data$V2[which(toupper(pcawg_mutation_data$gene)==full_gene_name)])
-      }
-      else if (toupper(mutation_type)=="5UTR") {
-        full_gene_name<-paste0(gene_name,"(",mutation_type,")")
-        pos_set<-as.character(pcawg_mutation_data$V2[which(toupper(pcawg_mutation_data$gene)==full_gene_name)])
-      }
-      else if (toupper(mutation_type)=="CDS") {
-        full_gene_name<-paste0(gene_name,"(",mutation_type,")")
-        pos_set<-as.character(pcawg_mutation_data$V2[which(toupper(pcawg_mutation_data$gene)==full_gene_name)])
-      }
-      else if (toupper(mutation_type)=="PROMCORE") {
-        full_gene_name<-paste0(gene_name,"(",mutation_type,")")
-        pos_set<-as.character(pcawg_mutation_data$V2[which(toupper(pcawg_mutation_data$gene)==full_gene_name)])
-      }
-      else if (toupper(mutation_type)=="ENH") {
-        full_gene_name<-paste0(gene_name,"(",mutation_type,")")
-        pos_set<-as.character(pcawg_mutation_data$V2[which(toupper(pcawg_mutation_data$gene)==full_gene_name)])
-      }
-      else if (toupper(mutation_type)=="PROMDOMAIN") {
-        full_gene_name<-paste0(gene_name,"(",mutation_type,")")
-        pos_set<-as.character(pcawg_mutation_data$V2[which(toupper(pcawg_mutation_data$gene)==full_gene_name)])
-      }
-      else {
-        print("Mutation Type not recognized")
-        return(list("X" = NA, "Y" = NA,"test" = NA, "X_total" = NA, "X_pos_num" = NA))
-        
-      }
-    }
-  }
-  
-  # new calculation for X_pos
-  X_pos<-expression_file[(row.names(expression_file) %in% pos_set) , ,drop=FALSE]
-  X_pos<-X_pos[!(is.na(rownames(X_pos))) , ,drop=FALSE]
-  old_X_pos<-X_pos
-  X_pos_num<-length(X_pos[,1])
-  
-  print(paste("Number of Positive Samples: ", length(X_pos[,1])))
-  # load negative training expression data for A
-  neg_set<-row.names(expression_file)[!(row.names(expression_file) %in% pos_set)]
-  X_neg<-expression_file[(row.names(expression_file) %in% neg_set) , ,drop=FALSE]
-  X_neg_num<-length(X_neg[,1])
-  print(paste("Number of Negative Samples: ", X_neg_num))
-  
-  X_total<-X_pos_num+X_neg_num
-  Y_pos<-data.frame(matrix(1,length(X_pos[,1]),1))
-  colnames(Y_pos)<-"sample"
-  rownames(Y_pos)<-(rownames(X_pos))
-  Y_neg<-data.frame(matrix(0,length(X_neg[,1]),1))
-  colnames(Y_neg)<-"sample"
-  rownames(Y_neg)<-(rownames(X_neg))
-  # combine pos and neg
-  X<-rbind(X_pos, X_neg)
-  Y<-rbind(Y_pos, Y_neg)
-  # here we set test to whatever is left
-  if (is.na(NA_pos_set)) {
-    #test<-expression_file[(row.names(expression_file) %in% unique(mutation_file$Tumor_Sample_Barcode)) , ]
-    test<- expression_file[ ((row.names(expression_file) %in% neg_set)) , ]
-  }
-  else
-    test<- expression_file[ (row.names(expression_file) %in% neg_set) , ]
-  
-  print(paste("Number of Remaining(test) Samples: ", length(test[,1])))
-  # return variables
-  # replace the period in rownames Y and replace with -
-  return(list("X" = X, "Y" = Y,"test" = test, "X_total" = X_total, "X_pos_num" = X_pos_num))
-}
 
-runClassifier_V2<- function(X, Y, nfolds_input, iterations, alpha, weighted, stratified) {
+# Runs a logistic regression classifier on X and Y, features(X) and labels(Y)
+
+runClassifier_V2<- function(X, # features
+                            Y, # labels
+                            nfolds_input, # the number of cross validation folds 
+                            iterations, # the number of times to run the model. (better to run more to get average lambda)
+                            alpha, # elastic-net penalty, see below
+                            weighted, # TRUE/FALSE weight the labels
+                            stratified) { # TRUE/FALSE, stratify the folds
   # The elastic-net penalty is controlled by alpha, and bridges the gap between lasso (α=1, the default) and ridge (α=0).
   # lasso results in sparse coefficients
   # ridge regression results in more coefficients
@@ -769,7 +674,7 @@ runClassifier_V2<- function(X, Y, nfolds_input, iterations, alpha, weighted, str
     weights<-rep(1,nrow(Y))
   }
   
-  # create an initial model and get a lambda
+  # create an initial model and get a lambda, this is somewhat cheating as I am using glmnet's hotstart, but then do my own CV
   lambda_model<-glmnet(as.matrix(X), as.factor(Y[,1]), family = "binomial", weights = weights, nlambda = 100)
   lambda_start<-lambda_model$lambda
   
@@ -814,11 +719,9 @@ runClassifier_V2<- function(X, Y, nfolds_input, iterations, alpha, weighted, str
     # start parallel cross validation here
     cv_pr_score_list<-foreach(fold=1:(nfolds)) %dopar% {
       
-      #loop contents here
-      
-      
-      #for (fold in 0:(nfolds-1)) {
+      # train on all data this is not in the fold
       model<-glmnet(as.matrix(X[which(foldid!=fold) , ]), lambda=lambda_start, as.factor(Y[which(foldid!=fold),1]), family = "binomial", weights = weights[which(foldid!=fold)])
+      # get the response of the data in the fold
       resp<-data.frame(predict(model, s=lambda_start, data.matrix(as.matrix(X[which(foldid==fold) , ])), type="response"))
       
       pr_auc_list<-rep(0,ncol(resp))
@@ -833,13 +736,14 @@ runClassifier_V2<- function(X, Y, nfolds_input, iterations, alpha, weighted, str
           pr_auc<-0
         }
         else {
+          # calculate PR AUC 
           pr <- pr.curve( scores.class0=as.numeric(resp_column),weights.class0=as.numeric(Y[which(foldid==fold),1]),curve=FALSE)
           pr_auc<-pr$auc.integral
-          #print(paste("PR AUC:",pr_auc))
         }
         pr_auc_list[col]<-pr_auc
         
         # Calculate Precision and Recall
+        # THIS CREATES A CUTOFF, better to use the PR AUC
         resp_column[resp_column>=.5]<-1
         resp_column[resp_column<.5]<-0
         
@@ -855,7 +759,6 @@ runClassifier_V2<- function(X, Y, nfolds_input, iterations, alpha, weighted, str
       
       list(pr_auc_list,precision_list,recall_list)
       
-      #plot(log(model$lambda), pr_auc_list)
     } # end of parallel loop
     # add up PR AUC scores
     list_of_auc_scores<-lapply(cv_pr_score_list, `[[`, 1)
@@ -906,36 +809,25 @@ runClassifier_V2<- function(X, Y, nfolds_input, iterations, alpha, weighted, str
   
   
   
-} # end of Run_Classifier_PR
+} # end of RunClassifier_V2
 
-create_common_gene_matrix<-function(input_matrix1, input_matrix2) {
-  # determine common gene names between 1 and 2
-  common_genes<-intersect(colnames(input_matrix1),colnames(input_matrix2))
-  # create new exp matrices 
-  common_input_matrix1<-input_matrix1[ , colnames(input_matrix1) %in% common_genes]
-  ordered_input_matrix1<-common_input_matrix1[ , order(colnames(common_input_matrix1)) ]
-  
-  common_input_matrix2<-input_matrix2[ , colnames(input_matrix2) %in% common_genes]
-  ordered_input_matrix2<-common_input_matrix2[ , order(colnames(common_input_matrix2)) ]
-  
-  return(list("matrix1" = common_input_matrix1, "matrix2" = common_input_matrix2))
-}
 
-# positive_recursive_iterate(bait=paste0("Initial_",gene), pred_resp, tree_path, gmt_file, full_set_XY$X, "origY"=full_set_XY$Y, orig_score_vector=big_model$pr_auc, num_permutations, num_events)
-# bait=paste0("Initial_",gene)
-# X<-full_set_XY$X
-# Y<-full_set_XY$Y
-# orig_score_vector=big_model$pr_auc
-# gsea_pvalue_threshold<-.05
-# gsea_fdr_threshold<-.05
-# orig_score_vector<-c(.5,.5,.5,.5,.5)
-# pvalue_threshold<-.05
-# min_gene_set_size<-5
-# test run
-# #results<-run_gsea_V2(gmt_file, X, Y, pred_resp, orig_score_vector, num_permutations, num_events, pvalue_threshold, min_gene_set_size,gsea_pvalue_threshold, gsea_fdr_threshold)
-
-run_gsea_V2<-function(bait, gmt_file, X, Y, pred_resp, orig_score_vector, num_permutations, num_events, pvalue_threshold, min_gene_set_size,
-                      gsea_pvalue_threshold, gsea_fdr_threshold, percent_overlap, folds, enrichment_analysis_only) {
+# This function runs the GSEA preranked tool for LURE and performs a permutation test by adding in random samples to see if it does better
+run_gsea_V2<-function(bait, 
+                      gmt_file, 
+                      X, # features
+                      Y, # labels
+                      pred_resp, # predicted response vector...passed to GSEA
+                      orig_score_vector, # original set of classifier scores
+                      num_permutations, # number of times to run classifier
+                      num_events, # max number of events
+                      pvalue_threshold, 
+                      min_gene_set_size,
+                      gsea_pvalue_threshold, 
+                      gsea_fdr_threshold, 
+                      percent_overlap, 
+                      folds, 
+                      enrichment_analysis_only) {
   no_col<-max(count.fields(paste0(DD_HOME,gmt_file),sep = "\t"))
   gmt_mutation_data<-(read.csv(paste0(DD_HOME,gmt_file),sep="\t",col.names=1:no_col,header = FALSE,stringsAsFactors = FALSE))
   
@@ -967,11 +859,12 @@ run_gsea_V2<-function(bait, gmt_file, X, Y, pred_resp, orig_score_vector, num_pe
     return(list("df_results"=result_output,"models"=models_output))
   }
   
+  # write data file for GSEA java app to read
   write.table(pred_resp, file=paste(DD_HOME,"rankedfile_",rand,".rnk",sep=""), quote=FALSE, sep="\t", col.names=FALSE)
   print("Running Pre-ranked GSEA for enrichment test...")
   gsea_cmd<-paste("java -cp ",DD_HOME,"gsea2-2.2.2.jar -Xmx15000m xtools.gsea.GseaPreranked -gmx ",DD_HOME,gmt_file," -collapse false -mode Max_probe -norm meandiv -nperm 1000 -rnk ",DD_HOME,"rankedfile_",rand,".rnk -scoring_scheme weighted -rpt_label my_analysis -include_only_symbols true -make_sets true -plot_top_x 20 -rnd_seed 1234 -set_max 500 -set_min ",min_gene_set_size," -zip_report false -out ",DD_HOME,"GSEA_reports/",rand," -gui false > ",OUTPUT_DATA,"/GSEA_logfile_",rand,".log", sep="")
-  #gsea_cmd<-paste("java -cp ",DD_HOME,"gsea2-2.2.2.jar -Xmx15000m xtools.gsea.GseaPreranked -gmx ",DD_HOME,gmt_file," -collapse false -mode Max_probe -norm meandiv -nperm 1000 -rnk ",DD_HOME,"rankedfile_",rand,".rnk -scoring_scheme classic -rpt_label my_analysis -include_only_symbols true -make_sets true -plot_top_x 20 -rnd_seed 1234 -set_max 500 -set_min ",min_gene_set_size," -zip_report false -out ",DD_HOME,"GSEA_reports/",rand," -gui false > ",OUTPUT_DATA,"/GSEA_logfile_",rand,".log", sep="")
-  
+
+  # check return code from GSEA 
   return_code<-system(paste0(gsea_cmd, " 2> ",DD_HOME,"logfile",rand,".txt"))
   print(paste0("GSEA Return code:",return_code))
   if (return_code > 0) {
@@ -987,7 +880,7 @@ run_gsea_V2<-function(bait, gmt_file, X, Y, pred_resp, orig_score_vector, num_pe
     return(list("df_results"=result_output,"models"=models_output))
     
   }
-  
+  # process GSEA results, read output files
   setwd(paste(DD_HOME,"GSEA_reports/",rand,sep=""))
   dir_results<-list.files()
   dir_results[length(dir_results)]
@@ -1001,12 +894,12 @@ run_gsea_V2<-function(bait, gmt_file, X, Y, pred_resp, orig_score_vector, num_pe
   if (enrichment_analysis_only==TRUE)
     return(GSEA_output)
   
-  # running regular LURE
+  # running normal LURE process 
   if (length(GSEA_output[,1]) == 0) {
     print("NO POSITIVE EVENTS FOUND!")
     return(list("df_results"=result_output,"models"=models_output))
   }
-  # events found, proceeding with dumpster diver
+  # events found, proceeding with LURE
   print(paste(length(GSEA_output[,1]), "positive event(s) found!"))
   
   # load gmt data
@@ -1019,9 +912,6 @@ run_gsea_V2<-function(bait, gmt_file, X, Y, pred_resp, orig_score_vector, num_pe
   print(row.names(GSEA_output))
 
   # Check for overlap between new event samples and pos_set. percent_overlap is passed in as an argument. 
-  # If the percent of samples of the new event in the old pos_set is greater than the percent_overlap, we do not consider that event
-  # to start I am putting percent overlap at only 33%.  
-  # So if 33% of the mutant samples are in the original pos_set have the mutation under consideration, we skip it.
 
   event_sample_names<-data.frame(matrix(nrow=0,ncol=2),stringsAsFactors = FALSE)
   colnames(event_sample_names)<-c("event","samples")
@@ -1142,7 +1032,23 @@ run_gsea_V2<-function(bait, gmt_file, X, Y, pred_resp, orig_score_vector, num_pe
   return(list("df_results"=result_output,"models"=models_output))
 } # end of run_gseaV2 function
 
+# Takes two matrices and the intersects the feature names (gene names) and outputs two matrices using only the intersected features
+create_common_gene_matrix<-function(input_matrix1, input_matrix2) {
+  # determine common gene names between 1 and 2
+  common_genes<-intersect(colnames(input_matrix1),colnames(input_matrix2))
+  # create new exp matrices 
+  common_input_matrix1<-input_matrix1[ , colnames(input_matrix1) %in% common_genes]
+  ordered_input_matrix1<-common_input_matrix1[ , order(colnames(common_input_matrix1)) ]
+  
+  common_input_matrix2<-input_matrix2[ , colnames(input_matrix2) %in% common_genes]
+  ordered_input_matrix2<-common_input_matrix2[ , order(colnames(common_input_matrix2)) ]
+  
+  return(list("matrix1" = common_input_matrix1, "matrix2" = common_input_matrix2))
+}
 
+
+
+# t_test function, this is will prevent the error thrown the data is basically the same
 run_t_test<-function(A, B) {
   myt_test <- try(t.test(A,B))
   if (inherits(myt_test, "try-error"))
@@ -1154,7 +1060,7 @@ run_t_test<-function(A, B) {
 }
 
 
-# Bonferroni FDR calculation
+# function for Bonferroni FDR calculation
 fdr <-
   function(NES,NESobs,NESnull) { 
     
@@ -1204,94 +1110,10 @@ fdr <-
   }
 
 
-# tree_path is an internal variable that keeps track of each individual path.  
-#   : Consider it a stack variable that is pushed new leaves to go down the tree and pops off leaves to back up the tree
-#   : Set it initially to the starting oncogene
-# tree_path_list is an external variable which is a list of the tree paths.  At the bottom of each tree, the current tree_path
-# TEST RUN
-#tree_path_list<-c()
-#positive_recursive_iterate(pred_resp, tree_path, gmt_file, X, "origY"=Y, orig_score_vector, num_permutations)
-
-#origY<-full_set_XY$Y
-#X<-full_set_XY$X
-#orig_score_vector=rep(0,num_permutations)
-#permutations<-5
-#bait="ATRX_truncating"
 
 
-# best_classifier_iterate<-function(bait, pred_resp, tree_path, gmt_file, X, origY, orig_score_vector, num_permutations, num_events, percent_overlap, pvalue_threshold, min_gene_set_size, gsea_pvalue_threshold, gsea_fdr_threshold) {
-#   event_list<-data.frame(matrix(nrow=0,ncol=2))
-#   event_list<-rbind(event_list,data.frame("event"=bait,"pr_auc"=mean(orig_score_vector)))
-#   
-#   #results<-run_gsea_V2(gmt_file, X, Y, pred_resp, orig_score_vector, num_permutations, num_events, pvalue_threshold, min_gene_set_size,gsea_pvalue_threshold, gsea_fdr_threshold)
-#   results<-run_gsea_V2(bait, gmt_file, X, origY, pred_resp, orig_score_vector=orig_score_vector, num_permutations, num_events=num_events, pvalue_threshold=pvalue_threshold, min_gene_set_size=min_gene_set_size,gsea_pvalue_threshold=gsea_pvalue_threshold, gsea_fdr_threshold=gsea_fdr_threshold, percent_overlap)
-#   #iteration_events<-run_gsea(gmt_file, "pos",X,origY,test, "LGG", pos_resp, .8, 10, num_iterations, 25, .05)  
-#   # OUTPUT FROM RUN GSEA:
-#   #result_output<-rbind(result_output,data.frame("bait"=bait
-#   #                                            "event"=event_sample_names$event[row],
-#   #                                              "sample_names"=event_sample_names$samples[row],
-#   #                                              "actual_vs_random_pvalue"=actual_vs_random_pvalue,
-#   #                                              "actual_vs_orig_pvalue"=actual_vs_orig_pvalue,
-#   #                                              "pr_auc_score"=paste(actual_model$pr_auc,collapse=" "),
-#   #                                              "mean_lambda"=actual_model$lambda.min,
-#   #                                              "pvalue_over_random"=actual_vs_random$p.value,
-#   #                                              "pvalue_over_orig"=actual_vs_orig$p.value,
-#   if (nrow(results$df_results) == 0)
-#     return(event_list)
-#   tree_length<-1
-#   while (nrow(results$df_results) > 0) {
-#     print(paste0("Tree Length: ",tree_length))
-#     tree_length<-tree_length+1
-#     df_results<-results$df_results
-#     best_event<-which(min(results$df_results$actual_vs_orig_pvalue) == results$df_results$actual_vs_orig_pvalue)
-#     gene<-results$df_results$event[best_event]
-#     print(paste("Adding samples containing event",gene,"to the positive set to recreate a classifier and rerun GSEA and look for new events:"))
-#     # add event samples to 1 in Y (add event samples to the positive set)
-#     # must create a new Y, otherwise it gets changed
-#     newY<-origY
-#     event_sample_names_inner_iteration<-strsplit(df_results$sample_names[best_event]," ")[[1]]
-#     pr_auc_scores<-as.numeric(strsplit(df_results$pr_auc_score[best_event]," ")[[1]])
-#     newY[which(rownames(newY) %in% event_sample_names_inner_iteration) , ]<-1
-#     
-#     print(paste("Length of Old Positive Sample Names:",length(origY[origY==1])))
-#     print(paste("Length of New Positive Sample Names:",length(event_sample_names_inner_iteration)))
-#     print(paste("Length of New and Old Positive Sample Names:",length(newY[newY==1])))
-#     pos_set<-rownames(newY)[which(newY==1)]
-#     # create a new test not containing the event samples
-#     new_XY<-createXY_pos("test","nada",X,pos_set=pos_set)
-#     
-#     big_model<-runClassifier_V2(X,newY,folds,num_permutations,alpha=1,weighted = TRUE,stratified = TRUE)
-#     # creating new response vector with all the samples without known event samples
-#     new_pred_resp<-((predict(big_model$model, s=min((big_model$min_lambda)[which(big_model$pr_auc==max(big_model$pr_auc))]), newx=data.matrix(new_XY$test), type="response")))[,1]
-#     
-#     
-#     print(paste("Length of test samples:",length(new_pred_resp)))
-#     # new score vector is the previous(orig) classifier scores
-#     new_score_vector<-as.numeric(strsplit(df_results$pr_auc_score[best_event]," ")[[1]])
-#     
-#     # add to event list
-#     event_list<-rbind(event_list,data.frame("event"=gene,"pr_auc"=mean(new_score_vector)))
-#     
-# 
-#     # output to source-target spreadsheet
-#     df_output<-data.frame("source"=df_results$bait[best_event],
-#                           "interaction"="positive",
-#                           "target"=gene,
-#                           "pvalue_over_orig"=df_results$pvalue_over_orig[best_event],
-#                           "pr_auc"=mean(pr_auc_scores))
-#     assign("STG_output", rbind(STG_output,df_output), envir = .GlobalEnv)
-#     tempY<-newY
-#     results<-run_gsea_V2(bait=gene, gmt_file, X, newY, pred_resp=new_pred_resp, orig_score_vector=new_score_vector, num_permutations, num_events=num_events, pvalue_threshold=pvalue_threshold, min_gene_set_size=min_gene_set_size,gsea_pvalue_threshold=gsea_pvalue_threshold, gsea_fdr_threshold=gsea_fdr_threshold, percent_overlap)
-#     origY<-tempY
-#   }
-#     
-# 
-#     
-#     
-# return(event_list)
-# }
 
-
+# This function performs a memo sort, the sorting algorithm used in oncoprint plots
 memoSort <- function(M) {
   geneOrder <- sort(rowSums(M), decreasing=TRUE, index.return=TRUE)$ix;
   scoreCol <- function(x) {
@@ -1308,7 +1130,111 @@ memoSort <- function(M) {
   return(list("geneOrder" = geneOrder, "sampleOrder" = sampleOrder));
 }
 
-
+# This is an orphaned function, replaced by create_XY_gmt
+createXY_pos<- function(gene_name, mutation_file, expression_file, pos_set, mutation_type, cnv_data, fusion_data, pcawg_mutation_data) {
+  NA_pos_set<-""
+  # CREATE X AND Y 
+  if (is.na(pos_set[1])) {
+    NA_pos_set<-NA
+    if (is.na(mutation_type)) {
+      pos_set<-unique(mutation_file$Tumor_Sample_Barcode[which(mutation_file$Hugo_Symbol %in% gene_name & !(mutation_file$Variant_Classification %in% c("Intron","Silent","3'UTR","5'UTR","3'Flank","5'Flank","IGR")))])
+    } else {
+      if (mutation_type=="SNV")
+        pos_set<-unique(mutation_file$Tumor_Sample_Barcode[which(mutation_file$Hugo_Symbol %in% gene_name & (mutation_file$Variant_Classification %in% c("Missense_Mutation","Nonsense_Mutation","Frame_Shift_Del","Frame_Shift_Ins","Nonstop_Mutation")))])
+      else if (toupper(mutation_type)=="MISSENSE")
+        pos_set<-unique(mutation_file$Tumor_Sample_Barcode[which(mutation_file$Hugo_Symbol %in% gene_name & (mutation_file$Variant_Classification %in% c("Missense_Mutation")))])
+      else if (toupper(mutation_type)=="TRUNCATING")
+        pos_set<-unique(mutation_file$Tumor_Sample_Barcode[which(mutation_file$Hugo_Symbol %in% gene_name & (mutation_file$Variant_Classification %in% c("Nonsense_Mutation","Frame_Shift_Del","Frame_Shift_Ins","Nonstop_Mutation")))])
+      else if (toupper(mutation_type)=="SPLICESITE")
+        pos_set<-unique(mutation_file$Tumor_Sample_Barcode[which(mutation_file$Hugo_Symbol %in% gene_name & (mutation_file$Variant_Classification %in% c("Splice_Site")))])
+      else if (toupper(mutation_type)=="SPLICE")
+        pos_set<-unique(mutation_file$Tumor_Sample_Barcode[which(mutation_file$Hugo_Symbol %in% gene_name & (mutation_file$Variant_Classification %in% c("Splice_Site")))])
+      else if (toupper(mutation_type)=="AMP") {
+        #sample_names<-colnames(cnv_data)[2:length(colnames(cnv_data))] 
+        #colnames(cnv_data)[2:length(colnames(cnv_data))]<-gsub("-",".",strtrim(sample_names,12))
+        gene_data<-cnv_data[which(toupper(cnv_data$`Gene Symbol`) == toupper(gene_name)), ]
+        pos_set<-unique(colnames(gene_data)[which(gene_data %in% c(2))])
+      }
+      else if (toupper(mutation_type)=="DEL") {
+        print("Deletion Event")
+        #sample_names<-colnames(cnv_data)[2:length(colnames(cnv_data))] 
+        #colnames(cnv_data)[2:length(colnames(cnv_data))]<-gsub("-",".",strtrim(sample_names,12))
+        gene_data<-cnv_data[which(toupper(cnv_data$`Gene Symbol`) == toupper(gene_name)), ]
+        pos_set<-unique(colnames(gene_data)[which(gene_data %in% c(-2))])
+      }
+      else if (toupper(mutation_type)=="FUSION") {
+        print("Fusion Event")
+        sample_names<-as.character(fusion_data[which(toupper(fusion_data$X1) == toupper(gene)),3:ncol(fusion_data)])
+        pos_set<-sample_names[!(sample_names=="")]
+      }
+      else if (toupper(mutation_type)=="3UTR") {
+        full_gene_name<-paste0(gene_name,"(",mutation_type,")")
+        pos_set<-as.character(pcawg_mutation_data$V2[which(toupper(pcawg_mutation_data$gene)==full_gene_name)])
+      }
+      else if (toupper(mutation_type)=="5UTR") {
+        full_gene_name<-paste0(gene_name,"(",mutation_type,")")
+        pos_set<-as.character(pcawg_mutation_data$V2[which(toupper(pcawg_mutation_data$gene)==full_gene_name)])
+      }
+      else if (toupper(mutation_type)=="CDS") {
+        full_gene_name<-paste0(gene_name,"(",mutation_type,")")
+        pos_set<-as.character(pcawg_mutation_data$V2[which(toupper(pcawg_mutation_data$gene)==full_gene_name)])
+      }
+      else if (toupper(mutation_type)=="PROMCORE") {
+        full_gene_name<-paste0(gene_name,"(",mutation_type,")")
+        pos_set<-as.character(pcawg_mutation_data$V2[which(toupper(pcawg_mutation_data$gene)==full_gene_name)])
+      }
+      else if (toupper(mutation_type)=="ENH") {
+        full_gene_name<-paste0(gene_name,"(",mutation_type,")")
+        pos_set<-as.character(pcawg_mutation_data$V2[which(toupper(pcawg_mutation_data$gene)==full_gene_name)])
+      }
+      else if (toupper(mutation_type)=="PROMDOMAIN") {
+        full_gene_name<-paste0(gene_name,"(",mutation_type,")")
+        pos_set<-as.character(pcawg_mutation_data$V2[which(toupper(pcawg_mutation_data$gene)==full_gene_name)])
+      }
+      else {
+        print("Mutation Type not recognized")
+        return(list("X" = NA, "Y" = NA,"test" = NA, "X_total" = NA, "X_pos_num" = NA))
+        
+      }
+    }
+  }
+  
+  # new calculation for X_pos
+  X_pos<-expression_file[(row.names(expression_file) %in% pos_set) , ,drop=FALSE]
+  X_pos<-X_pos[!(is.na(rownames(X_pos))) , ,drop=FALSE]
+  old_X_pos<-X_pos
+  X_pos_num<-length(X_pos[,1])
+  
+  print(paste("Number of Positive Samples: ", length(X_pos[,1])))
+  # load negative training expression data for A
+  neg_set<-row.names(expression_file)[!(row.names(expression_file) %in% pos_set)]
+  X_neg<-expression_file[(row.names(expression_file) %in% neg_set) , ,drop=FALSE]
+  X_neg_num<-length(X_neg[,1])
+  print(paste("Number of Negative Samples: ", X_neg_num))
+  
+  X_total<-X_pos_num+X_neg_num
+  Y_pos<-data.frame(matrix(1,length(X_pos[,1]),1))
+  colnames(Y_pos)<-"sample"
+  rownames(Y_pos)<-(rownames(X_pos))
+  Y_neg<-data.frame(matrix(0,length(X_neg[,1]),1))
+  colnames(Y_neg)<-"sample"
+  rownames(Y_neg)<-(rownames(X_neg))
+  # combine pos and neg
+  X<-rbind(X_pos, X_neg)
+  Y<-rbind(Y_pos, Y_neg)
+  # here we set test to whatever is left
+  if (is.na(NA_pos_set)) {
+    #test<-expression_file[(row.names(expression_file) %in% unique(mutation_file$Tumor_Sample_Barcode)) , ]
+    test<- expression_file[ ((row.names(expression_file) %in% neg_set)) , ]
+  }
+  else
+    test<- expression_file[ (row.names(expression_file) %in% neg_set) , ]
+  
+  print(paste("Number of Remaining(test) Samples: ", length(test[,1])))
+  # return variables
+  # replace the period in rownames Y and replace with -
+  return(list("X" = X, "Y" = Y,"test" = test, "X_total" = X_total, "X_pos_num" = X_pos_num))
+}
 #pos_set<-unique(juri_file$V2[which(juri_file$gene==gene)])
 
 #pos_set, feature_data, pcawg_clinical, .05)

@@ -1,4 +1,9 @@
-# LURE WRAPPER
+# LURE_wrapper.R
+# David Haan 2019
+# This script is a wrapper script for running the LURE method.  
+#LURE's input arguments are passed as command line arguments to this script
+# It is set up to load the PANCAN gene expression data as feature data, but this will change
+
 run_timestamp<-strftime(Sys.time(),"%Y_%m_%d_%H_%M")
 
 if ((Sys.info()["nodename"] == "Davids-MacBook-Pro.local") | 
@@ -82,7 +87,7 @@ print(opt)
 
 feature_data<-data.frame(fread(paste(PANCAN_DATA,opt$feature_data_file,sep=""),stringsAsFactors = FALSE),row.names = 1)
 
-tissue<-"NA"
+
 
 
 LURE(bait_gene=opt$bait_gene,

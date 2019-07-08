@@ -1,6 +1,6 @@
 ## LURE_functions.R
 ## David Haan 2015-2019
-## Functions associated with LURE and other projects
+## Functions associated with LURE
 
 
 

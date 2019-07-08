@@ -161,6 +161,8 @@ LURE<-function(bait_gene,
 
   # If enrichment analysis only is TRUE, then only one iteration of LURE is executed.  Essentially the initial_bait_classifier is applied to 
   # the user provided test set
+  # If enrichment analysis only is FALSE, then the iterative process of LURE begins
+  # The positive_recursive_iterate is the core recursive function for LURE, see function for more details
   if (enrichment_analysis_only==TRUE) {
     results<-positive_recursive_iterate(bait=paste0("Initial_",bait_gene), 
                                         pred_resp, 

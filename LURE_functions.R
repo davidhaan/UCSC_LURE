@@ -17,7 +17,7 @@ if(length(new.packages)) {
 lapply(list.of.packages, require, character.only = TRUE)
 
 
-#### --- LURE FUNCTIONS
+#### --- LURE FUNCTION
 LURE<-function(bait_gene,
                gmt_file,
                feature_data,
@@ -30,7 +30,7 @@ LURE<-function(bait_gene,
                gsea_fdr_threshold,
                max_tree_length,
                folds,
-               enrichment_analysis_only=TRUE,
+               enrichment_analysis_only,
                target_gmt_file,
                target_feature_data,
                output_file_prefix) {
@@ -2031,7 +2031,7 @@ pcawg.colour.palette <- function(
   return(x.colours)
 }
 
-
+# orphaned function
 create_output_matrix<-function(gene_list, sample_names, mutation_all, non_coding_mutations, cnv_data) {
   # creates output matrix for oncoprint for the telomere marker paper
   #cluster should = "Tumor Cluster1" or "Tumor Cluster2", etc

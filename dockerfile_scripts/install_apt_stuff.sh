@@ -16,6 +16,9 @@ DEBIAN_FRONTEND=noninteractive apt install keyboard-configuration
 # installs add-apt-repository
 apt install -y software-properties-common
 
+# x11 stuff
+apt install -y xorg xvfb xauth xfonts-base
+
 # install INTEL MKL library
 git clone https://github.com/eddelbuettel/mkl4deb.git
 bash ./mkl4deb/script.sh
@@ -43,5 +46,4 @@ apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E298A3A825C0D65DFD57CBB
 apt update
 DEBIAN_FRONTEND=noninteractive apt install -y r-base-dev
 
-# apt install -y xorg xvfb xauth xfonts-base
 

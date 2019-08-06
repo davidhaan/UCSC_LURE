@@ -3,14 +3,15 @@
 run_timestamp<-strftime(Sys.time(),"%Y_%m_%d_%H_%M")
 
 print("Running LURE Positive Controls")
-PANCAN_DATA<-"./input"
-DD_HOME<-"./"
+PANCAN_DATA<-"./input/"
+DD_HOME<-"./input/"
 SCRIPTS<-"./"
 source(paste(sep="",SCRIPTS,"LURE_functions.R"))
 registerDoMC(detectCores()/2)
 
 # Run the SF3B1 in UVM Positive Control
-
+print(DD_HOME)
+print(PANCAN_DATA)
 # Load feature data for UVM (gene expression data)
 feature_data<-data.frame(fread(paste(PANCAN_DATA,"pancan_RNAexp_UVM",sep=""),stringsAsFactors = FALSE),row.names = 1)
 

@@ -12,7 +12,7 @@ registerDoMC(detectCores()/2)
 # Run the SF3B1 in UVM Positive Control
 
 # Load feature data for UVM (gene expression data)
-feature_data<-data.frame(fread(paste(PANCAN_DATA,"pancan_RNAexp_UVM",tissue,sep=""),stringsAsFactors = FALSE),row.names = 1)
+feature_data<-data.frame(fread(paste(PANCAN_DATA,"pancan_RNAexp_UVM",sep=""),stringsAsFactors = FALSE),row.names = 1)
 
 # Run LURE using the default settings
 LURE(bait_gene="SF3B1-SET1_missense",

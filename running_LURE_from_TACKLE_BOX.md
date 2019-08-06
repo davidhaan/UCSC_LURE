@@ -9,25 +9,22 @@ To run LURE from Tackle Box, you'll need to have the following directory structu
 
 ```
 .
+├── GSEA_reports
 ├── LURE_functions.R
 ├── LURE_positive_controls.R
 ├── LURE_wrapper.R
+├── gsea2-2.2.2.jar
 ├── input
-│   ├── GSEA_reports
 │   ├── pancan_RNAexp_UVM
 │   ├── positive_control_IDH1_missense.gmt
 │   ├── positive_control_SF3B1_missense.gmt
 │   └── readme
 ├── oncoprint.py
-└── repos
-    ├── gsea.jar -> gsea2-2.2.4.jar
-    └── gsea2-2.2.4.jar
 ```
 
-- The LURE scripts (`LURE_*.R` and `oncoprint.py`) are in the outermost directory, `./`.
+- The LURE scripts (`LURE_*.R`, `oncoprint.py`, and `gsea2-2.2.2.jar`) are in the outermost directory, `./`.
 - The input data files are in the `input` directory.
-- `gsea.jar` is in the `repos` directory.
-
+- GSEA, `gsea2-2.2.2.jar`, will write output to `GSEA_reports`.
 
 
 ### How can I run the example LURE job using Tackle Box?

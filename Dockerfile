@@ -12,3 +12,10 @@ RUN ["ln", "-s", "/data/repos", "/root/repos"]
 
 RUN ["bash", "/dockerfile_scripts/install_apt_stuff.sh"]
 RUN ["bash", "/dockerfile_scripts/install_r_stuff.sh"]
+
+RUN ["mkdir", "-p", "/lure_scripts/"]
+COPY ./scripts /lure_scripts
+
+COPY ./running_LURE_from_TACKLE_BOX.md /
+
+ENTRYPOINT ["cat", "/running_LURE_from_TACKLE_BOX.md"]

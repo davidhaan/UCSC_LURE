@@ -885,14 +885,16 @@ run_gsea_V2<-function(bait,
   # process GSEA results, read output files
   #setwd(paste(DD_HOME,"GSEA_reports/",rand,sep=""))
   
-  # get the most recent version in the 
+  # retrieve the GSEA results
   dir_results<-list.files(path=paste(DD_HOME,"GSEA_reports/",rand,sep=""))
-  dir_results[length(dir_results)]
+  print(dir_results[length(dir_results)])
   print(paste(DD_HOME,"GSEA_reports/",rand,"/",dir_results[length(dir_results)],sep=""))
+  GSEA_results_dir<-paste(DD_HOME,"GSEA_reports/",rand,"/",dir_results[length(dir_results)],sep="")
+  GSEA_results_xls_file<-list.files(pattern=".*gsea_report_for_na_pos_.*xls.*",path=GSEA_results_dir)
+  
   #setwd(paste("./",dir_results[length(dir_results)],sep=""))
   print("Loading GSEA results...")
-  GSEA_output<-read.csv(list.files(pattern=".*gsea_report_for_na_pos_.*xls.*",
-                        path=paste0(DD_HOME,"GSEA_reports/",rand,"/",dir_results[length(dir_results)],sep="")),
+  GSEA_output<-read.csv(paste0(GSEA_results_dir,"/",GSEA_results_xls_file,sep=""),
                         sep="\t", 
                         row.names=1, 
                         stringsAsFactors = FALSE)

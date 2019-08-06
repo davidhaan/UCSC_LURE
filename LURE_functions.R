@@ -79,8 +79,8 @@ LURE<-function(bait_gene,
     enrichment_analysis_only<-FALSE
   
   # load gmt file
-  no_col <- max(count.fields(paste0(DD_HOME,gmt_file), sep = "\t"))
-  gmt_file_data <- read.table(paste0(DD_HOME,gmt_file),sep="\t",fill=TRUE,header = F,col.names=1:no_col,stringsAsFactors = FALSE)
+  no_col <- max(count.fields(paste0(PANCAN_DATA,gmt_file), sep = "\t"))
+  gmt_file_data <- read.table(paste0(PANCAN_DATA,gmt_file),sep="\t",fill=TRUE,header = F,col.names=1:no_col,stringsAsFactors = FALSE)
   
   print(paste0("Initial Processing of ",bait_gene))
   
@@ -226,8 +226,8 @@ LURE<-function(bait_gene,
     if (nrow(results)>0) {
       write.table(results,file=filename1,quote=FALSE,sep="\t",col.names = FALSE,row.names = FALSE)
       
-      no_col <- max(count.fields(paste0(DD_HOME,gmt_file), sep = "\t"))
-      gmt_file_data <- read.table(paste0(DD_HOME,gmt_file),sep="\t",fill=TRUE,header = F,col.names=1:no_col,stringsAsFactors = FALSE)
+      no_col <- max(count.fields(paste0(PANCAN_DATA,gmt_file), sep = "\t"))
+      gmt_file_data <- read.table(paste0(PANCAN_DATA,gmt_file),sep="\t",fill=TRUE,header = F,col.names=1:no_col,stringsAsFactors = FALSE)
       
       gene_list<-c(bait_gene,rownames(results))
       oncoprint_mutation_data<-data.frame(matrix(NA,ncol=nrow(oncogene_neg_expression_data),nrow=length(gene_list)))
@@ -314,8 +314,8 @@ LURE<-function(bait_gene,
     bait_gene_for_filename<-substr(bait_gene,1,200)
 
     # load GMT data file
-    no_col <- max(count.fields(paste0(DD_HOME,gmt_file), sep = "\t"))
-    gmt_file_data <- read.table(paste0(DD_HOME,gmt_file),sep="\t",fill=TRUE,header = F,col.names=1:no_col,stringsAsFactors = FALSE)
+    no_col <- max(count.fields(paste0(PANCAN_DATA,gmt_file), sep = "\t"))
+    gmt_file_data <- read.table(paste0(PANCAN_DATA,gmt_file),sep="\t",fill=TRUE,header = F,col.names=1:no_col,stringsAsFactors = FALSE)
     
     # create mutation matrix
     oncoprint_mutation_data<-data.frame(matrix(NA,ncol=length(classifier_scores),nrow=length(gene_list)))
@@ -830,8 +830,8 @@ run_gsea_V2<-function(bait,
                       percent_overlap, 
                       folds, 
                       enrichment_analysis_only) {
-  no_col<-max(count.fields(paste0(DD_HOME,gmt_file),sep = "\t"))
-  gmt_mutation_data<-(read.csv(paste0(DD_HOME,gmt_file),sep="\t",col.names=1:no_col,header = FALSE,stringsAsFactors = FALSE))
+  no_col<-max(count.fields(paste0(PANCAN_DATA,gmt_file),sep = "\t"))
+  gmt_mutation_data<-(read.csv(paste0(PANCAN_DATA,gmt_file),sep="\t",col.names=1:no_col,header = FALSE,stringsAsFactors = FALSE))
   
   print(paste("Bait:",bait))
   print(paste("LengthX:",length(X[,1])))
@@ -864,7 +864,7 @@ run_gsea_V2<-function(bait,
   # write data file for GSEA java app to read
   write.table(pred_resp, file=paste(DD_HOME,"rankedfile_",rand,".rnk",sep=""), quote=FALSE, sep="\t", col.names=FALSE)
   print("Running Pre-ranked GSEA for enrichment test...")
-  gsea_cmd<-paste("java -cp ",DD_HOME,"gsea2-2.2.2.jar -Xmx15000m xtools.gsea.GseaPreranked -gmx ",DD_HOME,gmt_file," -collapse false -mode Max_probe -norm meandiv -nperm 1000 -rnk ",DD_HOME,"rankedfile_",rand,".rnk -scoring_scheme weighted -rpt_label my_analysis -include_only_symbols true -make_sets true -plot_top_x 20 -rnd_seed 1234 -set_max 500 -set_min ",min_gene_set_size," -zip_report false -out ",DD_HOME,"GSEA_reports/",rand," -gui false > ",OUTPUT_DATA,"/GSEA_logfile_",rand,".log", sep="")
+  gsea_cmd<-paste("java -cp ",DD_HOME,"gsea2-2.2.2.jar -Xmx15000m xtools.gsea.GseaPreranked -gmx ",PANCAN_DATA,gmt_file," -collapse false -mode Max_probe -norm meandiv -nperm 1000 -rnk ",DD_HOME,"rankedfile_",rand,".rnk -scoring_scheme weighted -rpt_label my_analysis -include_only_symbols true -make_sets true -plot_top_x 20 -rnd_seed 1234 -set_max 500 -set_min ",min_gene_set_size," -zip_report false -out ",DD_HOME,"GSEA_reports/",rand," -gui false > ",OUTPUT_DATA,"/GSEA_logfile_",rand,".log", sep="")
 
   # check return code from GSEA 
   return_code<-system(paste0(gsea_cmd, " 2> ",DD_HOME,"logfile",rand,".txt"))
@@ -883,12 +883,19 @@ run_gsea_V2<-function(bait,
     
   }
   # process GSEA results, read output files
-  setwd(paste(DD_HOME,"GSEA_reports/",rand,sep=""))
-  dir_results<-list.files()
+  #setwd(paste(DD_HOME,"GSEA_reports/",rand,sep=""))
+  
+  # get the most recent version in the 
+  dir_results<-list.files(path=paste(DD_HOME,"GSEA_reports/",rand,sep=""))
   dir_results[length(dir_results)]
-  setwd(paste(DD_HOME,"GSEA_reports/",rand,"/",dir_results[length(dir_results)],sep=""))
+  print(paste(DD_HOME,"GSEA_reports/",rand,"/",dir_results[length(dir_results)],sep=""))
+  #setwd(paste("./",dir_results[length(dir_results)],sep=""))
   print("Loading GSEA results...")
-  GSEA_output<-read.csv(list.files(pattern=".*gsea_report_for_na_pos_.*xls.*")   , sep="\t", row.names=1, stringsAsFactors = FALSE)
+  GSEA_output<-read.csv(list.files(pattern=".*gsea_report_for_na_pos_.*xls.*",
+                        path=paste0(DD_HOME,"GSEA_reports/",rand,"/",dir_results[length(dir_results)],sep="")),
+                        sep="\t", 
+                        row.names=1, 
+                        stringsAsFactors = FALSE)
   GSEA_output<-GSEA_output[ (GSEA_output$NOM.p.val < gsea_pvalue_threshold) , ]
   GSEA_output<-GSEA_output[ (GSEA_output$FDR.q.val < gsea_fdr_threshold) , ]
   pos_events<-data.frame()
@@ -904,9 +911,10 @@ run_gsea_V2<-function(bait,
   # events found, proceeding with LURE
   print(paste(length(GSEA_output[,1]), "positive event(s) found!"))
   
+  #setwd(DD_HOME)
   # load gmt data
-  no_col<-max(count.fields(paste0(DD_HOME,gmt_file),sep = "\t"))
-  gmt_mutation_data<-(read.csv(paste0(DD_HOME,gmt_file),sep="\t",col.names=1:no_col,header = FALSE,stringsAsFactors = FALSE))
+  no_col<-max(count.fields(paste0(PANCAN_DATA,gmt_file),sep = "\t"))
+  gmt_mutation_data<-(read.csv(paste0(PANCAN_DATA,gmt_file),sep="\t",col.names=1:no_col,header = FALSE,stringsAsFactors = FALSE))
   
   
   # take top 50 events events, make sure the GSEA setting to build the xls files is at 50 or more...

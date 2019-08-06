@@ -4,8 +4,9 @@ run_timestamp<-strftime(Sys.time(),"%Y_%m_%d_%H_%M")
 
 print("Running LURE Positive Controls")
 PANCAN_DATA<-"./input/"
-DD_HOME<-"./input/"
+DD_HOME<-"./"
 SCRIPTS<-"./"
+OUTPUT_DATA<-"./output/"
 source(paste(sep="",SCRIPTS,"LURE_functions.R"))
 registerDoMC(detectCores()/2)
 
@@ -14,7 +15,7 @@ print(DD_HOME)
 print(PANCAN_DATA)
 # Load feature data for UVM (gene expression data)
 feature_data<-data.frame(fread(paste(PANCAN_DATA,"pancan_RNAexp_UVM",sep=""),stringsAsFactors = FALSE),row.names = 1)
-
+tissue<-"UVM"
 # Run LURE using the default settings
 LURE(bait_gene="SF3B1-SET1_missense",
      gmt_file="positive_control_SF3B1_missense.gmt",

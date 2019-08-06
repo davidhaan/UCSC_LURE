@@ -4,8 +4,8 @@ run_timestamp<-strftime(Sys.time(),"%Y_%m_%d_%H_%M")
 
 print("Running LURE Positive Controls")
 PANCAN_DATA<-"./input"
-DD_HOME<-"."
-SCRIPTS<-"."
+DD_HOME<-"./"
+SCRIPTS<-"./"
 source(paste(sep="",SCRIPTS,"LURE_functions.R"))
 registerDoMC(detectCores()/2)
 

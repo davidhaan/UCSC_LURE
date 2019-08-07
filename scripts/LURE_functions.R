@@ -79,8 +79,8 @@ LURE<-function(bait_gene,
     enrichment_analysis_only<-FALSE
   
   # load gmt file
-  no_col <- max(count.fields(paste0(PANCAN_DATA,gmt_file), sep = "\t"))
-  gmt_file_data <- read.table(paste0(PANCAN_DATA,gmt_file),sep="\t",fill=TRUE,header = F,col.names=1:no_col,stringsAsFactors = FALSE)
+  no_col <- max(count.fields(paste0(INPUT,gmt_file), sep = "\t"))
+  gmt_file_data <- read.table(paste0(INPUT,gmt_file),sep="\t",fill=TRUE,header = F,col.names=1:no_col,stringsAsFactors = FALSE)
   
   print(paste0("Initial Processing of ",bait_gene))
   
@@ -140,7 +140,7 @@ LURE<-function(bait_gene,
 
   scores_labels$Sample_Names<-factor(scores_labels$Sample_Names, levels=scores_labels$Sample_Names[order(scores_labels$Classifier_Score, decreasing=TRUE)])
   positive_samples<-length(scores_labels$Classifier_Score[scores_labels$Classifier_Score>.5])
-  pdf(paste0(PANCAN_DATA,output_file_prefix,"_Initial_Classifier_Scores_",positive_samples,"_positive_",round(mean(initial_bait_model$pr_auc),2),"_AUC_",tissue,"_",bait_gene,".pdf"),onefile = FALSE,width=8,height = 5)
+  pdf(paste0(OUTPUT,output_file_prefix,"_Initial_Classifier_Scores_",positive_samples,"_positive_",round(mean(initial_bait_model$pr_auc),2),"_AUC_",tissue,"_",bait_gene,".pdf"),onefile = FALSE,width=8,height = 5)
   print(ggplot(data=scores_labels, aes(x=Sample_Names,y=Classifier_Score,fill=Color)) +
           geom_bar(stat="identity", width=0.5) +
           scale_fill_manual("", values = c("black" = "black", "red" = "red")) +
@@ -209,12 +209,12 @@ LURE<-function(bait_gene,
     filename_gene<-gsub("\\(","_",bait_gene)
     filename_gene<-gsub("\\)","",filename_gene)
     gmt_prefix<-strsplit(gmt_file,"\\.")[[1]][1]
-    filename1<-paste0(PANCAN_DATA,output_file_prefix,"_TCGA_",tissue,"_Enrich_Only_Analysis_Output_",run_timestamp,"_",gmt_prefix,"_",filename_gene,".tsv")
-    filename4<-paste0(PANCAN_DATA,output_file_prefix,"_TCGA_",tissue,"_Enrich_Only_classifier_scores_",run_timestamp,"_",gmt_prefix,"_",filename_gene,".tsv")
-    filename5<-paste0(PANCAN_DATA,output_file_prefix,"_TCGA_",tissue,"_Enrich_Only_mutation_matrix_",run_timestamp,"_",gmt_prefix,"_",filename_gene,".tsv")
-    filename6<-paste0(PANCAN_DATA,output_file_prefix,"_TCGA_",tissue,"_Enrich_Only_Oncoprint_Plot_",run_timestamp,"_",gmt_prefix,"_",filename_gene,".pdf")
-    filename7<-paste0(PANCAN_DATA,output_file_prefix,"_TCGA_",tissue,"_Enrich_Only_Original_PR_AUC_scores",run_timestamp,"_",gmt_prefix,"_",filename_gene,".tsv")
-    filename8<-paste0(PANCAN_DATA,output_file_prefix,"_TCGA_",tissue,"_Initial_Classifier_Coefficients",run_timestamp,"_",gmt_prefix,"_",filename_gene,".tsv")
+    filename1<-paste0(OUTPUT,output_file_prefix,"_TCGA_",tissue,"_Enrich_Only_Analysis_Output_",run_timestamp,"_",gmt_prefix,"_",filename_gene,".tsv")
+    filename4<-paste0(OUTPUT,output_file_prefix,"_TCGA_",tissue,"_Enrich_Only_classifier_scores_",run_timestamp,"_",gmt_prefix,"_",filename_gene,".tsv")
+    filename5<-paste0(OUTPUT,output_file_prefix,"_TCGA_",tissue,"_Enrich_Only_mutation_matrix_",run_timestamp,"_",gmt_prefix,"_",filename_gene,".tsv")
+    filename6<-paste0(OUTPUT,output_file_prefix,"_TCGA_",tissue,"_Enrich_Only_Oncoprint_Plot_",run_timestamp,"_",gmt_prefix,"_",filename_gene,".pdf")
+    filename7<-paste0(OUTPUT,output_file_prefix,"_TCGA_",tissue,"_Enrich_Only_Original_PR_AUC_scores",run_timestamp,"_",gmt_prefix,"_",filename_gene,".tsv")
+    filename8<-paste0(OUTPUT,output_file_prefix,"_TCGA_",tissue,"_Initial_Classifier_Coefficients",run_timestamp,"_",gmt_prefix,"_",filename_gene,".tsv")
     
     print(paste0("Routine Complete for ",bait_gene,"_","____",gmt_prefix,"...writing classifier score file: "))
     write.csv(pred_resp,file=filename4)
@@ -226,8 +226,8 @@ LURE<-function(bait_gene,
     if (nrow(results)>0) {
       write.table(results,file=filename1,quote=FALSE,sep="\t",col.names = FALSE,row.names = FALSE)
       
-      no_col <- max(count.fields(paste0(PANCAN_DATA,gmt_file), sep = "\t"))
-      gmt_file_data <- read.table(paste0(PANCAN_DATA,gmt_file),sep="\t",fill=TRUE,header = F,col.names=1:no_col,stringsAsFactors = FALSE)
+      no_col <- max(count.fields(paste0(INPUT,gmt_file), sep = "\t"))
+      gmt_file_data <- read.table(paste0(INPUT,gmt_file),sep="\t",fill=TRUE,header = F,col.names=1:no_col,stringsAsFactors = FALSE)
       
       gene_list<-c(bait_gene,rownames(results))
       oncoprint_mutation_data<-data.frame(matrix(NA,ncol=nrow(oncogene_neg_expression_data),nrow=length(gene_list)))
@@ -263,14 +263,14 @@ LURE<-function(bait_gene,
     filename_gene<-gsub("\\(","_",bait_gene)
     filename_gene<-gsub("\\)","",filename_gene)
     gmt_prefix<-strsplit(gmt_file,"\\.")[[1]][1]
-    filename1<-paste0(PANCAN_DATA,output_file_prefix,"_TCGA_",tissue,"_",filename_gene,"_tree_path_list_",run_timestamp,"_",gmt_prefix,".tsv")
-    filename2<-paste0(PANCAN_DATA,output_file_prefix,"_TCGA_",tissue,"_",filename_gene,"_STG_data_",run_timestamp,"_",gmt_prefix,".tsv")
-    filename3<-paste0(PANCAN_DATA,output_file_prefix,"_TCGA_",tissue,"_",filename_gene,"_set_cover_solution_",run_timestamp,"_",gmt_prefix,".tsv")
-    filename4<-paste0(PANCAN_DATA,output_file_prefix,"_TCGA_",tissue,"_",filename_gene,"_set_cover_classifier_scores_",run_timestamp,"_",gmt_prefix,".tsv")
-    filename5<-paste0(PANCAN_DATA,output_file_prefix,"_TCGA_",tissue,"_",filename_gene,"_Set_Cover_mutation_matrix_",run_timestamp,"_",gmt_prefix,".tsv")
-    filename6<-paste0(PANCAN_DATA,output_file_prefix,"_TCGA_",tissue,"_",filename_gene,"_Oncoprint_Plot_",run_timestamp,"_",gmt_prefix,".pdf")
-    filename7<-paste0(PANCAN_DATA,output_file_prefix,"_TCGA_",tissue,"_",filename_gene,"_Original_PR_AUC_scores",run_timestamp,"_",gmt_prefix,".tsv")
-    filename8<-paste0(PANCAN_DATA,output_file_prefix,"_TCGA_",tissue,"_",filename_gene,"_set_cover_PR_AUC_scores_",run_timestamp,"_",gmt_prefix,".tsv")
+    filename1<-paste0(OUTPUT,output_file_prefix,"_TCGA_",tissue,"_",filename_gene,"_tree_path_list_",run_timestamp,"_",gmt_prefix,".tsv")
+    filename2<-paste0(OUTPUT,output_file_prefix,"_TCGA_",tissue,"_",filename_gene,"_STG_data_",run_timestamp,"_",gmt_prefix,".tsv")
+    filename3<-paste0(OUTPUT,output_file_prefix,"_TCGA_",tissue,"_",filename_gene,"_set_cover_solution_",run_timestamp,"_",gmt_prefix,".tsv")
+    filename4<-paste0(OUTPUT,output_file_prefix,"_TCGA_",tissue,"_",filename_gene,"_set_cover_classifier_scores_",run_timestamp,"_",gmt_prefix,".tsv")
+    filename5<-paste0(OUTPUT,output_file_prefix,"_TCGA_",tissue,"_",filename_gene,"_Set_Cover_mutation_matrix_",run_timestamp,"_",gmt_prefix,".tsv")
+    filename6<-paste0(OUTPUT,output_file_prefix,"_TCGA_",tissue,"_",filename_gene,"_Oncoprint_Plot_",run_timestamp,"_",gmt_prefix,".pdf")
+    filename7<-paste0(OUTPUT,output_file_prefix,"_TCGA_",tissue,"_",filename_gene,"_Original_PR_AUC_scores",run_timestamp,"_",gmt_prefix,".tsv")
+    filename8<-paste0(OUTPUT,output_file_prefix,"_TCGA_",tissue,"_",filename_gene,"_set_cover_PR_AUC_scores_",run_timestamp,"_",gmt_prefix,".tsv")
     
     
     # Run the Set Coverage Algorithm  
@@ -314,8 +314,8 @@ LURE<-function(bait_gene,
     bait_gene_for_filename<-substr(bait_gene,1,200)
 
     # load GMT data file
-    no_col <- max(count.fields(paste0(PANCAN_DATA,gmt_file), sep = "\t"))
-    gmt_file_data <- read.table(paste0(PANCAN_DATA,gmt_file),sep="\t",fill=TRUE,header = F,col.names=1:no_col,stringsAsFactors = FALSE)
+    no_col <- max(count.fields(paste0(INPUT,gmt_file), sep = "\t"))
+    gmt_file_data <- read.table(paste0(INPUT,gmt_file),sep="\t",fill=TRUE,header = F,col.names=1:no_col,stringsAsFactors = FALSE)
     
     # create mutation matrix
     oncoprint_mutation_data<-data.frame(matrix(NA,ncol=length(classifier_scores),nrow=length(gene_list)))
@@ -403,13 +403,13 @@ LURE<-function(bait_gene,
     vertex_attr(g)$name<-gsub("MISSENSE","MISS",vertex_attr(g)$name)
     
     # output bipartite graph for viewing
-    pdf(paste0(PANCAN_DATA,tissue,"_",gsub("\\|","_",bait_gene_for_filename),"_bipartite.pdf"))
+    pdf(paste0(OUTPUT,tissue,"_",gsub("\\|","_",bait_gene_for_filename),"_bipartite.pdf"))
     #print(plot(g, layout=layout.bipartite, vertex.size=7, vertex.label.cex=0.5, vertex.label.color = "black"))
     print(plot(g, layout=coords, vertex.size=10, vertex.label.cex=0.5, asp = 0.75) +
             text(x=0,y=-1.2,"Samples") +
             text(x=0, y=1.3, "Mutations"))
     dev.off()
-    write.csv(bipartite_data,file=paste0(PANCAN_DATA,tissue,"_",gsub("\\|","_",bait_gene_for_filename),"_bipartite.csv"),row.names = FALSE)
+    write.csv(bipartite_data,file=paste0(OUTPUT,tissue,"_",gsub("\\|","_",bait_gene_for_filename),"_bipartite.csv"),row.names = FALSE)
     
     # generate classifier scores again but with the smaller gene set after set coverage algorithm
     positive_set<-c()
@@ -830,8 +830,8 @@ run_gsea_V2<-function(bait,
                       percent_overlap, 
                       folds, 
                       enrichment_analysis_only) {
-  no_col<-max(count.fields(paste0(PANCAN_DATA,gmt_file),sep = "\t"))
-  gmt_mutation_data<-(read.csv(paste0(PANCAN_DATA,gmt_file),sep="\t",col.names=1:no_col,header = FALSE,stringsAsFactors = FALSE))
+  no_col<-max(count.fields(paste0(INPUT,gmt_file),sep = "\t"))
+  gmt_mutation_data<-(read.csv(paste0(INPUT,gmt_file),sep="\t",col.names=1:no_col,header = FALSE,stringsAsFactors = FALSE))
   
   print(paste("Bait:",bait))
   print(paste("LengthX:",length(X[,1])))
@@ -862,17 +862,17 @@ run_gsea_V2<-function(bait,
   }
   
   # write data file for GSEA java app to read
-  write.table(pred_resp, file=paste(DD_HOME,"rankedfile_",rand,".rnk",sep=""), quote=FALSE, sep="\t", col.names=FALSE)
+  write.table(pred_resp, file=paste(TEMP,"rankedfile_",rand,".rnk",sep=""), quote=FALSE, sep="\t", col.names=FALSE)
   print("Running Pre-ranked GSEA for enrichment test...")
-  gsea_cmd<-paste("java -cp ",DD_HOME,"gsea2-2.2.2.jar -Xmx15000m xtools.gsea.GseaPreranked -gmx ",PANCAN_DATA,gmt_file," -collapse false -mode Max_probe -norm meandiv -nperm 1000 -rnk ",DD_HOME,"rankedfile_",rand,".rnk -scoring_scheme weighted -rpt_label my_analysis -include_only_symbols true -make_sets true -plot_top_x 20 -rnd_seed 1234 -set_max 500 -set_min ",min_gene_set_size," -zip_report false -out ",DD_HOME,"GSEA_reports/",rand," -gui false > ",OUTPUT_DATA,"/GSEA_logfile_",rand,".log", sep="")
+  gsea_cmd<-paste("java -cp ",SCRIPTS,"gsea2-2.2.2.jar -Xmx15000m xtools.gsea.GseaPreranked -gmx ",INPUT,gmt_file," -collapse false -mode Max_probe -norm meandiv -nperm 1000 -rnk ",TEMP,"rankedfile_",rand,".rnk -scoring_scheme weighted -rpt_label my_analysis -include_only_symbols true -make_sets true -plot_top_x 20 -rnd_seed 1234 -set_max 500 -set_min ",min_gene_set_size," -zip_report false -out ",TEMP,"GSEA_reports/",rand," -gui false > ",TEMP,"/GSEA_logfile_",rand,".log", sep="")
 
   # check return code from GSEA 
-  return_code<-system(paste0(gsea_cmd, " 2> ",DD_HOME,"logfile",rand,".txt"))
+  return_code<-system(paste0(gsea_cmd, " 2> ",TEMP,"logfile",rand,".txt"))
   print(paste0("GSEA Return code:",return_code))
   if (return_code > 0) {
     print("Java failure!!!!")
-    print(paste0("logfile located at ",DD_HOME,"logfile",rand,".txt"))
-    logfile<-system(paste0("cat ",DD_HOME,"logfile",rand,".txt"), intern = TRUE)
+    print(paste0("logfile located at ",TEMP,"logfile",rand,".txt"))
+    logfile<-system(paste0("cat ",TEMP,"logfile",rand,".txt"), intern = TRUE)
     print(logfile)
     if (!(grepl("none of the gene sets passed size thresholds",logfile[1]))) {
       print("JAVA Failure unknown, stopping process")
@@ -883,13 +883,12 @@ run_gsea_V2<-function(bait,
     
   }
   # process GSEA results, read output files
-  #setwd(paste(DD_HOME,"GSEA_reports/",rand,sep=""))
-  
+
   # retrieve the GSEA results
-  dir_results<-list.files(path=paste(DD_HOME,"GSEA_reports/",rand,sep=""))
+  dir_results<-list.files(path=paste(TEMP,"GSEA_reports/",rand,sep=""))
   print(dir_results[length(dir_results)])
-  print(paste(DD_HOME,"GSEA_reports/",rand,"/",dir_results[length(dir_results)],sep=""))
-  GSEA_results_dir<-paste(DD_HOME,"GSEA_reports/",rand,"/",dir_results[length(dir_results)],sep="")
+  print(paste(TEMP,"GSEA_reports/",rand,"/",dir_results[length(dir_results)],sep=""))
+  GSEA_results_dir<-paste(TEMP,"GSEA_reports/",rand,"/",dir_results[length(dir_results)],sep="")
   GSEA_results_xls_file<-list.files(pattern=".*gsea_report_for_na_pos_.*xls.*",path=GSEA_results_dir)
   
   #setwd(paste("./",dir_results[length(dir_results)],sep=""))
@@ -913,10 +912,9 @@ run_gsea_V2<-function(bait,
   # events found, proceeding with LURE
   print(paste(length(GSEA_output[,1]), "positive event(s) found!"))
   
-  #setwd(DD_HOME)
   # load gmt data
-  no_col<-max(count.fields(paste0(PANCAN_DATA,gmt_file),sep = "\t"))
-  gmt_mutation_data<-(read.csv(paste0(PANCAN_DATA,gmt_file),sep="\t",col.names=1:no_col,header = FALSE,stringsAsFactors = FALSE))
+  no_col<-max(count.fields(paste0(INPUT,gmt_file),sep = "\t"))
+  gmt_mutation_data<-(read.csv(paste0(INPUT,gmt_file),sep="\t",col.names=1:no_col,header = FALSE,stringsAsFactors = FALSE))
   
   
   # take top 50 events events, make sure the GSEA setting to build the xls files is at 50 or more...

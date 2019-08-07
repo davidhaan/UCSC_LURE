@@ -3,18 +3,18 @@
 run_timestamp<-strftime(Sys.time(),"%Y_%m_%d_%H_%M")
 
 print("Running LURE Positive Controls")
-PANCAN_DATA<-"./input/"
-DD_HOME<-"./"
-SCRIPTS<-"./"
-OUTPUT_DATA<-"./output/"
+
+INPUT<-"./input/"
+TEMP<-"./temp/"
+SCRIPTS<-"./scripts/"
+OUTPUT<-"./output/"
 source(paste(sep="",SCRIPTS,"LURE_functions.R"))
 registerDoMC(detectCores()/2)
 
 # Run the SF3B1 in UVM Positive Control
-print(DD_HOME)
-print(PANCAN_DATA)
+
 # Load feature data for UVM (gene expression data)
-feature_data<-data.frame(fread(paste(PANCAN_DATA,"pancan_RNAexp_UVM",sep=""),stringsAsFactors = FALSE),row.names = 1)
+feature_data<-data.frame(fread(paste(INPUT,"pancan_RNAexp_UVM",sep=""),stringsAsFactors = FALSE),row.names = 1)
 tissue<-"UVM"
 # Run LURE using the default settings
 LURE(bait_gene="SF3B1-SET1_missense",
@@ -34,7 +34,7 @@ LURE(bait_gene="SF3B1-SET1_missense",
 
 # Run the IDH1 Positive Control
 # load the feature data for LGG (gene expression data)
-feature_data<-data.frame(fread(paste(PANCAN_DATA,"pancan_RNAexp_LGG",sep=""),stringsAsFactors = FALSE),row.names = 1)
+feature_data<-data.frame(fread(paste(INPUT,"pancan_RNAexp_LGG",sep=""),stringsAsFactors = FALSE),row.names = 1)
 
 LURE(bait_gene="IDH1-SET1_missense",
        gmt_file="positive_control_IDH1_missense.gmt",

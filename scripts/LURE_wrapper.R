@@ -1,36 +1,26 @@
 # LURE_wrapper.R
 # David Haan 2019
 # This script is a wrapper script for running the LURE method.  
-#LURE's input arguments are passed as command line arguments to this script
+# LURE's input arguments are passed as command line arguments to this script
 # It is set up to load the PANCAN gene expression data as feature data, but this will change
 
 run_timestamp<-strftime(Sys.time(),"%Y_%m_%d_%H_%M")
 
-if ((Sys.info()["nodename"] == "Davids-MacBook-Pro.local") | 
-    (grepl("eduroam",Sys.info()["nodename"])==1) |
-    (grepl("dhcp",Sys.info()["nodename"])==1)) {
-  print("Running Locally...")
-  PCAWG_DATA<<-"~/TCGA_data/pancan/pcawg_data/"
-  PANCAN_DATA<<-"~/TCGA_data/pancan/pancan_data/"
-  OUTPUT_DATA<<-"~/TCGA_data/pancan/output/"
-  DD_HOME<<-"~/TCGA_data/"
-  SCRIPTS<<-"~/GoogleDriveUCSC/DARKMATTER/"
-  source(paste(sep="",SCRIPTS,"dd_functions.R"))
-  registerDoMC(detectCores()/4)
-  
-  
-} else {
-  print("Running on Server")
-  PCAWG_DATA<<-Sys.getenv("PCAWG_DATA")
-  PANCAN_DATA<<-Sys.getenv("PANCAN_DATA")
-  OUTPUT_DATA<<-Sys.getenv("OUTPUT_DATA")
-  DD_HOME<<-Sys.getenv("DD_HOME")
-  SCRIPTS<<-Sys.getenv("SCRIPTS")
-  source(paste(sep="",SCRIPTS,"dd_functions.R"))
-  registerDoMC(detectCores())
-  }
+run_timestamp<-strftime(Sys.time(),"%Y_%m_%d_%H_%M")
+
+print("Running LURE Wrapper Script")
+
+INPUT<-"./input/"
+TEMP<-"./temp/"
+SCRIPTS<-"./scripts/"
+OUTPUT<-"./output/"
+source(paste(sep="",SCRIPTS,"LURE_functions.R"))
+registerDoMC(detectCores()/2)
 
 option_list = list(
+  make_option(c("--feature_data_file"), type="character", default="pancan_RNAexp_UVM",
+              help="Feature Data File (Must be located in input directory)", metavar="character"),
+  
   make_option(c("--folds"), type="numeric", default=10, 
               help="Number of Cross Validation Folds", metavar="character"),
   
@@ -74,7 +64,7 @@ option_list = list(
   make_option(c("--target_feature_file"), type="character", default="mutation_specific_cytoband_fusion_5_15_2019.gmt", 
               help="This argument only pertains when LURE is run with enrichment only.  It is the gmt file for the test/target dataset.  The original gmt_file argument is for the bait", metavar="character"),
   
-  make_option(c("--output_file_prefix"), type="character", default="V50",
+  make_option(c("--output_file_prefix"), type="character", default="V10",
               help="This is the file prefix assigned to all the output files.  For multiple runs it helps keep track of each run.")
   
 )
@@ -84,8 +74,10 @@ opt = parse_args(opt_parser)
 folds<<-opt$folds
 print(opt)
 
+# For running PANCAN analysis...
+# feature_data<-data.frame(fread(paste(PANCAN_DATA,opt$feature_data_file,sep=""),stringsAsFactors = FALSE),row.names = 1)
 
-feature_data<-data.frame(fread(paste(PANCAN_DATA,opt$feature_data_file,sep=""),stringsAsFactors = FALSE),row.names = 1)
+feature_data<-data.frame(fread(paste(INPUT,opt$feature_data_file,sep=""),stringsAsFactors = FALSE),row.names = 1)
 
 
 

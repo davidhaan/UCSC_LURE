@@ -1,0 +1,11 @@
+#chrisw 20190709
+#build an image for running LURE
+
+FROM stuartlab/tackle_box:dev
+
+RUN ["mkdir", "-p", "/lure_scripts/"]
+COPY ./scripts /lure_scripts
+
+COPY ./running_LURE_from_TACKLE_BOX.md /
+
+ENTRYPOINT ["cat", "/running_LURE_from_TACKLE_BOX.md"]

@@ -12,15 +12,7 @@ To run LURE from Tackle Box, you'll need to have the following directory structu
 ├── input
 │   ├── pancan_RNAexp_UVM
 │   ├── positive_control_SF3B1_missense.gmt
-│   └── readme
 ├── output
-├── scripts
-│   ├── LURE_functions.R
-│   ├── LURE_positive_controls.R
-│   ├── LURE_wrapper.R
-│   ├── README
-│   ├── gsea2-2.2.2.jar
-│   └── oncoprint.py
 └── temp
     └── GSEA_reports
 ```

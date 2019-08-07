@@ -9,22 +9,21 @@ To run LURE from Tackle Box, you'll need to have the following directory structu
 
 ```
 .
-├── GSEA_reports
-├── LURE_functions.R
-├── LURE_positive_controls.R
-├── LURE_wrapper.R
-├── gsea2-2.2.2.jar
 ├── input
 │   ├── pancan_RNAexp_UVM
-│   ├── positive_control_IDH1_missense.gmt
 │   ├── positive_control_SF3B1_missense.gmt
 │   └── readme
-├── oncoprint.py
+├── output
+├── scripts
+│   ├── LURE_functions.R
+│   ├── LURE_positive_controls.R
+│   ├── LURE_wrapper.R
+│   ├── README
+│   ├── gsea2-2.2.2.jar
+│   └── oncoprint.py
+└── temp
+    └── GSEA_reports
 ```
-
-- The LURE scripts (`LURE_*.R`, `oncoprint.py`, and `gsea2-2.2.2.jar`) are in the outermost directory, `./`.
-- The input data files are in the `input` directory.
-- GSEA, `gsea2-2.2.2.jar`, will write output to `GSEA_reports`.
 
 
 ### How can I run the example LURE job using Tackle Box?
@@ -41,7 +40,7 @@ docker run -ti --entrypoint /bin/bash -v `pwd`:/data stuartlab/tackle_box
 3. Start R.
 
 
-4. In R, do `source("LURE_positive_controls.R")`. This will load some R libraries, load some input files, and then run the LURE analysis pipeline.
+4. In R, do `source("/lure_scripts/LURE_positive_controls.R")`. This will load some R libraries, load some input files, and then run the LURE analysis pipeline.
 
 
 5. (Check the results.)

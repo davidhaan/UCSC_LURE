@@ -13,16 +13,13 @@ The LURE website is [here](https://sysbiowiki.soe.ucsc.edu/lure).
 ---
 ### LURE Scripts
 
-LURE_positive_controls.R: 
-
+`LURE_positive_controls.R`:
 Runs the positive controls for the LURE manuscript. There are two positive controls: SF3B1 in Uveal Melanoma (UVM) and IDH1 in Lower Grade Gliomas (LGG). The positive controls are further described in the manuscript.
 
-LURE_functions.R: 
-
+`LURE_functions.R`:
 This script contains R functions associated with the LURE method. LURE can be ran as a function in R or using the LURE_wrapper.R script.
 
-LURE_wrapper.R: 
-
+`LURE_wrapper.R`:
 A wrapper command line script which calls LURE using command line arguments. The wrapper simply passes the command line arguments to the LURE R function. The command line arguments are descibed in the "LURE Parameters" section below.
 
 ---
@@ -79,7 +76,7 @@ To run LURE from Tackle Box, you'll need to have a specific directory structure 
 6. Exit the Docker container with `exit`.
 
 ---
-### What are all of those output files in the `example_jobs` directory?
+### What are all of those output files in the `/example_jobs` directory?
 
 This is the output from running the UVM positive controls example job:
 

@@ -1,6 +1,6 @@
-### What is Tackle Box?
+### What is LURE?
 
-Tackle Box is the Docker image for running LURE, a machine learning method developed by David Haan. The LURE paper is available on [BioRxiv](https://www.biorxiv.org/content/10.1101/727891v1). The citation is:
+LURE is a semi-supervised machine learning tool, Learning UnRealized Events (LURE), that finds new drivers sharing molecular signatures with known drivers. The LURE paper is available on [BioRxiv](https://www.biorxiv.org/content/10.1101/727891v1). The citation is:
 
 
     Using Transcriptional Signatures to Find Cancer Drivers with LURE
@@ -9,6 +9,23 @@ Tackle Box is the Docker image for running LURE, a machine learning method devel
 
 
 The LURE website is [here](https://sysbiowiki.soe.ucsc.edu/lure).
+
+### FILES
+
+LURE_positive_controls.R: 
+
+Runs the positive controls for the LURE manuscript. There are two positive controls: SF3B1 in Uveal Melanoma (UVM) and IDH1 in Lower Grade Gliomas (LGG). The positive controls are further described in the manuscript.
+
+LURE_functions.R: 
+
+This script contains Functions associated with the LURE method
+
+LURE_wrapper.R: A wrapper script which calls LURE using the command line arguments given to the wrapper script
+
+LURE_positive_controls.R: Runs the positive controls for the LURE manuscript
+### What is Tackle Box?
+
+Tackle Box is the Docker image for running LURE. While it is possible to run the LURE code from directly within a local installation of R, we recommend running LURE from within Tackle Box.
 
 ---
 ### What is the directory structure for running LURE with Tackle Box?

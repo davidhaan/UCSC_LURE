@@ -18,8 +18,7 @@ registerDoMC(detectCores()-1)
 
 # Load feature data for UVM (gene expression data)
 feature_data<-data.frame(fread(paste(INPUT,"pancan_RNAexp_UVM",sep=""),stringsAsFactors = FALSE),row.names = 1)
-tissue<-"UVM"
-# Run LURE using the default settings
+# Run LURE 
 LURE(bait_gene="SF3B1-SET1_missense",
      gmt_file="positive_control_SF3B1_missense.gmt",
      feature_data=feature_data,
@@ -33,12 +32,13 @@ LURE(bait_gene="SF3B1-SET1_missense",
      max_tree_length = 5,
      folds=10,
      enrichment_analysis_only=FALSE,
-     output_file_prefix="Pos_Ctrl")
+     output_file_prefix="Pos_Ctrl",
+     tissue="UVM")
 
 # Run the IDH1 Positive Control
 # load the feature data for LGG (gene expression data)
 feature_data<-data.frame(fread(paste(INPUT,"pancan_RNAexp_LGG",sep=""),stringsAsFactors = FALSE),row.names = 1)
-tissue<-"LGG"
+
 LURE(bait_gene="IDH1-SET1_missense",
        gmt_file="positive_control_IDH1_missense.gmt",
        feature_data=feature_data,
@@ -52,7 +52,8 @@ LURE(bait_gene="IDH1-SET1_missense",
        max_tree_length = 5,
        folds=10,
        enrichment_analysis_only=FALSE,
-       output_file_prefix="Pos_Ctrl")
+       output_file_prefix="Pos_Ctrl",
+       tissue="LGG")
 
 
 

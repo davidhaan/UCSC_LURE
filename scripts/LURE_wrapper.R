@@ -18,9 +18,6 @@ source(paste(sep="",SCRIPTS,"LURE_functions.R"))
 registerDoMC(detectCores()/2)
 
 option_list = list(
-  make_option(c("--feature_data_file"), type="character", default="pancan_RNAexp_UVM",
-              help="Feature Data File (Must be located in input directory)", metavar="character"),
-  
   make_option(c("--folds"), type="numeric", default=10, 
               help="Number of Cross Validation Folds", metavar="character"),
   
@@ -56,7 +53,7 @@ option_list = list(
               help="Used to limit the number of prey events found by GSEA and considered for LURE's classifier AUC score step.  The events are sorted by GSEA NES score so the top events will be chosen. The larger this parameter the longer the runtime.",
               metavar="character"),
   make_option(c("--feature_data_file"), type="character", default="both", 
-              help="Feature Data file", metavar="character"),
+              help="Feature Data File (Must be located in input directory)", metavar="character"),
   
   make_option(c("--target_gmt_file"), type="character", default="LUAD_functional_coding_non_coding_amp_del_fusion.gmt", 
               help="This argument only pertains when LURE is run with enrichment only.  It is the gmt file for the test/target dataset.  The original gmt_file argument is for the bait", metavar="character"),
@@ -65,7 +62,11 @@ option_list = list(
               help="This argument only pertains when LURE is run with enrichment only.  It is the gmt file for the test/target dataset.  The original gmt_file argument is for the bait", metavar="character"),
   
   make_option(c("--output_file_prefix"), type="character", default="V10",
-              help="This is the file prefix assigned to all the output files.  For multiple runs it helps keep track of each run.")
+              help="This is the file prefix assigned to all the output files.  For multiple runs it helps keep track of each run."),
+  
+  make_option(c("--tissue"), type="character", default="",
+              help="Tissue or Tumor Type, used for additional filename prefix")
+  
   
 )
 
@@ -95,7 +96,8 @@ LURE(bait_gene=opt$bait_gene,
      max_tree_length =opt$max_tree_length,
      folds=opt$folds,
      enrichment_analysis_only=FALSE,
-     output_file_prefix=opt$output_file_prefix)
+     output_file_prefix=opt$output_file_prefix,
+     tissue=opt$tissue)
 
 
 

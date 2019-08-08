@@ -88,8 +88,6 @@ Description: This is the file prefix assigned to all the output files.  For mult
 Default=""<br />
 Description: Tissue or Tumor Type, used for additional filename prefix for large pancan runs<br />
 
-
-
 ### What is Tackle Box?
 
 Tackle Box is the Docker image for running LURE. While it is possible to run the LURE code from directly within a local installation of R, we recommend running LURE from within Tackle Box.

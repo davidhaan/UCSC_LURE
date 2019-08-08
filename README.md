@@ -10,6 +10,7 @@ LURE is a semi-supervised machine learning tool, Learning UnRealized Events (LUR
 
 The LURE website is [here](https://sysbiowiki.soe.ucsc.edu/lure).
 
+---
 ### LURE Scripts
 
 LURE_positive_controls.R: 
@@ -24,6 +25,7 @@ LURE_wrapper.R:
 
 A wrapper command line script which calls LURE using command line arguments. The wrapper simply passes the command line arguments to the LURE R function. The command line arguments are descibed in the "LURE Parameters" section below.
 
+---
 ### What is Tackle Box?
 
 Tackle Box is the Docker image for running LURE. While it is possible to run the LURE code from directly within a local installation of R, we recommend running LURE from within Tackle Box.
@@ -98,6 +100,7 @@ This is the output from running the UVM positive controls example job:
 
 - `Pos_Ctrl_Initial_Classifier_Scores_10_positive_0.71_AUC_UVM_SF3B1-SET1_missense.pdf` is a waterfall plot of each sample's LURE bait score.
 
+---
 ### LURE Parameters
 
 Here is a list of the parameters used by the LURE R function as well as the wrapper script.

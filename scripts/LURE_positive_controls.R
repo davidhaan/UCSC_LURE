@@ -9,6 +9,7 @@ print("Running LURE Positive Controls")
 
 INPUT<-"./input/"
 TEMP<-"./temp/"
+# SCRIPTS<-"/lure_scripts/" # for tackle_box
 SCRIPTS<-"./scripts/"
 OUTPUT<-"./output/"
 source(paste(sep="",SCRIPTS,"LURE_functions.R"))
@@ -18,7 +19,7 @@ registerDoMC(detectCores()-1)
 
 # Load feature data for UVM (gene expression data)
 feature_data<-data.frame(fread(paste(INPUT,"pancan_RNAexp_UVM",sep=""),stringsAsFactors = FALSE),row.names = 1)
-# Run LURE 
+# Run LURE
 LURE(bait_gene="SF3B1-SET1_missense",
      gmt_file="positive_control_SF3B1_missense.gmt",
      feature_data=feature_data,

@@ -101,6 +101,10 @@ This is the output from running the UVM positive controls example job:
 
 ### LURE Parameters
 
+Here is a list of the parameters, defaults, and description used by the LURE function as well as the wrapper script.
+
+The default parameters shown here will run the SF3B1 positive control in UVM.
+
 --folds<br />
 Default: 10<br />
 Description: Number of Cross Validation Folds<br />
@@ -111,23 +115,23 @@ Description: Number of Permutations/Iterations<br />
 
 --min_gene_set_size<br />
 Default: 4<br />
-Description: prey event minimum size: parameter for GSEA, only events with n or more mutated samples are considered<br />
+Description: Catch event minimum size: parameter for SSEA; only events with <min_gene_set_size> or more mutated samples are considered<br />
 
 --percent_overlap<br />
 Default: 0.5<br />
-Description: If <percent_overlap> of the new event samples are in the existing positive set already then we skip it. A smaller number is more restrictive<br />
+Description: If <percent_overlap> of the samples harboring the potential catch event are in the existing bait sample set  then we skip it. A smaller number is more restrictive<br />
 
 --max_tree_length<br />
 Default: 5<br />
-Description: Max Tree Length: Here we set the max length of the Event Discovery Tree<br />
+Description: Max Tree Length: Here we set the max length of the Event Discovery Tree (EDT). A longer EDT will result in longer run times<br />
 
 --bait_gene<br />
-Default: "custom_to_test.tsv"<br />
-Description: .tsv file containing bait genes to test<br />
+Default: "SF3B1-SET1_MISSENSE"<br />
+Description: Bait gene name. Must be present in the provided gmt file. Multiple baits are allowed separated by a semicolon<br />
 
 --gmt_file<br />
-Default: "mutation_specific_cytoband_fusion_5_15_2019.gmt"<br />
-Description: .gmt file containing catch data<br />
+Default: "positive_control_SF3B1_missense.gmt"<br />
+Description: Gene Matrix Transposed (gmt) formatted file. Each line in the file lists a mutation and the samples harboring the mutation. See positive control files for examples.<br />
 
 --gsea_fdr_threshold<br />
 Default: .25<br />

@@ -24,11 +24,9 @@ LURE_wrapper.R:
 
 A wrapper command line script which calls LURE using command line arguments. The command line arguments are descibed below:
 
---folds 
-
-Default: 10
-
-Description: Number of Cross Validation Folds
+--folds<br />
+Default: 10<br />
+Description: Number of Cross Validation Folds<br />
 
 --num_permutations . 
 Default: 5 . 

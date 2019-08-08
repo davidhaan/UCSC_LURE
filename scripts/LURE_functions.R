@@ -33,7 +33,8 @@ LURE<-function(bait_gene,
                enrichment_analysis_only,
                target_gmt_file,
                target_feature_data,
-               output_file_prefix) {
+               output_file_prefix,
+               tissue) {
   #set defaults if none given
   if(is.na(bait_gene)) {
     print("Must provide a bait gene")
@@ -77,6 +78,8 @@ LURE<-function(bait_gene,
     folds<-10
   if(is.na(enrichment_analysis_only))
     enrichment_analysis_only<-FALSE
+  if(is.na(tissue))
+    tissue<-""
   
   # load gmt file
   no_col <- max(count.fields(paste0(INPUT,gmt_file), sep = "\t"))

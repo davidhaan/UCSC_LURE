@@ -28,65 +28,65 @@ A wrapper command line script which calls LURE using command line arguments. The
 Default: 10<br />
 Description: Number of Cross Validation Folds<br />
 
---num_permutations . 
-Default: 5 . 
-Description: Number of Permutations/Iterations . 
+--num_permutations<br />
+Default: 5<br />
+Description: Number of Permutations/Iterations<br />
 
---min_gene_set_size
-Default: 4
-Description: prey event minimum size: parameter for GSEA, only events with n or more mutated samples are considered
+--min_gene_set_size<br />
+Default: 4<br />
+Description: prey event minimum size: parameter for GSEA, only events with n or more mutated samples are considered<br />
 
---percent_overlap
-Default: 0.5
-Description: If <percent_overlap> of the new event samples are in the existing positive set already then we skip it. A smaller number is more restrictive
+--percent_overlap<br />
+Default: 0.5<br />
+Description: If <percent_overlap> of the new event samples are in the existing positive set already then we skip it. A smaller number is more restrictive<br />
 
---max_tree_length
-Default: 5
-Description: Max Tree Length: Here we set the max length of the Event Discovery Tree
+--max_tree_length<br />
+Default: 5<br />
+Description: Max Tree Length: Here we set the max length of the Event Discovery Tree<br />
 
---bait_gene
-Default: "custom_to_test.tsv"
-Description: .tsv file containing bait genes to test
+--bait_gene<br />
+Default: "custom_to_test.tsv"<br />
+Description: .tsv file containing bait genes to test<br />
 
---gmt_file")
-Default: "mutation_specific_cytoband_fusion_5_15_2019.gmt"
-Description: .gmt file containing catch data
+--gmt_file<br />
+Default: "mutation_specific_cytoband_fusion_5_15_2019.gmt"<br />
+Description: .gmt file containing catch data<br />
 
---gsea_fdr_threshold
-Default: .25
-Description: FDR value threshold for GSEA step
+--gsea_fdr_threshold<br />
+Default: .25<br />
+Description: FDR value threshold for GSEA step<br />
 
---gsea_pvalue_threshold
-Default: .05
-Description: P value threshold for GSEA step
+--gsea_pvalue_threshold<br />
+Default: .05<br />
+Description: P value threshold for GSEA step<br />
 
---LURE_pvalue_threshold
-Default: .05
-Description: P value threshold for LURE AUC score step
+--LURE_pvalue_threshold<br />
+Default: .05<br />
+Description: P value threshold for LURE AUC score step<br />
 
---max_num_events
-Default: 5
-Description: Used to limit the number of prey events found by GSEA and considered for LURE's classifier AUC score step.  The events are sorted by GSEA NES score so the top events will be chosen. The larger this parameter the longer the runtime
+--max_num_events<br />
+Default: 5<br />
+Description: Used to limit the number of prey events found by GSEA and considered for LURE's classifier AUC score step.  The events are sorted by GSEA NES score so the top events will be chosen. The larger this parameter the longer the runtime<br />
 
---feature_data_file
-Default: "../input/pancan_RNAexp_UVM",
-Description: "Feature Data File (Must be located in input directory)"
+--feature_data_file<br />
+Default: "../input/pancan_RNAexp_UVM"<br />
+Description: Feature Data File (Must be located in input directory)<br />
 
---target_gmt_file
-Default: ""
-Description: This argument only pertains when LURE is run with enrichment only.  It is the gmt file for the test/target dataset.  The original gmt_file argument is for the bait
+--target_gmt_file<br />
+Default: ""<br />
+Description: This argument only pertains when LURE is run with enrichment only.  It is the gmt file for the test/target dataset.  The original gmt_file argument is for the bait<br />
 
---target_feature_file
-Default: "",
-Description: This argument only pertains when LURE is run with enrichment only.  It is the gmt file for the test/target dataset.  The original gmt_file argument is for the bait
+--target_feature_file<br />
+Default: ""<br />
+Description: This argument only pertains when LURE is run with enrichment only.  It is the gmt file for the test/target dataset.  The original gmt_file argument is for the bait<br />
 
---output_file_prefix
-Default="V10",
-Description: This is the file prefix assigned to all the output files.  For multiple runs it helps keep track of each run.
+--output_file_prefix<br />
+Default="V10"<br />
+Description: This is the file prefix assigned to all the output files.  For multiple runs it helps keep track of each run.<br />
 
---tissue
-Default=""
-Description: Tissue or Tumor Type, used for additional filename prefix for large pancan runs
+--tissue<br />
+Default=""<br />
+Description: Tissue or Tumor Type, used for additional filename prefix for large pancan runs<br />
 
 
 

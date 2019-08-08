@@ -8,10 +8,10 @@ RUN ["mkdir", "-p", "/lure_scripts/"]
 COPY ./scripts /lure_scripts
 
 # copy instructions
-COPY ./running_LURE_from_TACKLE_BOX.md /
+COPY ./README.md /
 
 # default entrypoint prints instructions
-ENTRYPOINT ["cat", "/running_LURE_from_TACKLE_BOX.md"]
+ENTRYPOINT ["cat", "/README.md"]
 
 
 # copy example jobs

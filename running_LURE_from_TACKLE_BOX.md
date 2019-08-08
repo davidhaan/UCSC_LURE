@@ -10,7 +10,7 @@ LURE is a semi-supervised machine learning tool, Learning UnRealized Events (LUR
 
 The LURE website is [here](https://sysbiowiki.soe.ucsc.edu/lure).
 
-### FILES
+### LURE Scripts
 
 LURE_positive_controls.R: 
 
@@ -18,11 +18,78 @@ Runs the positive controls for the LURE manuscript. There are two positive contr
 
 LURE_functions.R: 
 
-This script contains Functions associated with the LURE method
+This script contains R functions associated with the LURE method. LURE can be ran as a function in R or using the LURE_wrapper.R script.
 
-LURE_wrapper.R: A wrapper script which calls LURE using the command line arguments given to the wrapper script
+LURE_wrapper.R: 
 
-LURE_positive_controls.R: Runs the positive controls for the LURE manuscript
+A wrapper command line script which calls LURE using command line arguments. The command line arguments are descibed below:
+
+--folds 
+Default: 10
+Description: Number of Cross Validation Folds
+
+--num_permutations
+Default: 5
+Description: Number of Permutations/Iterations
+
+--min_gene_set_size
+Default: 4
+Description: prey event minimum size: parameter for GSEA, only events with n or more mutated samples are considered
+
+--percent_overlap
+Default: 0.5
+Description: If <percent_overlap> of the new event samples are in the existing positive set already then we skip it. A smaller number is more restrictive
+
+--max_tree_length
+Default: 5
+Description: Max Tree Length: Here we set the max length of the Event Discovery Tree
+
+--bait_gene
+Default: "custom_to_test.tsv"
+Description: .tsv file containing bait genes to test
+
+--gmt_file")
+Default: "mutation_specific_cytoband_fusion_5_15_2019.gmt"
+Description: .gmt file containing catch data
+
+--gsea_fdr_threshold
+Default: .25
+Description: FDR value threshold for GSEA step
+
+--gsea_pvalue_threshold
+Default: .05
+Description: P value threshold for GSEA step
+
+--LURE_pvalue_threshold
+Default: .05
+Description: P value threshold for LURE AUC score step
+
+--max_num_events
+Default: 5
+Description: Used to limit the number of prey events found by GSEA and considered for LURE's classifier AUC score step.  The events are sorted by GSEA NES score so the top events will be chosen. The larger this parameter the longer the runtime
+
+--feature_data_file
+Default: "../input/pancan_RNAexp_UVM",
+Description: "Feature Data File (Must be located in input directory)"
+
+--target_gmt_file
+Default: ""
+Description: This argument only pertains when LURE is run with enrichment only.  It is the gmt file for the test/target dataset.  The original gmt_file argument is for the bait
+
+--target_feature_file
+Default: "",
+Description: This argument only pertains when LURE is run with enrichment only.  It is the gmt file for the test/target dataset.  The original gmt_file argument is for the bait
+
+--output_file_prefix
+Default="V10",
+Description: This is the file prefix assigned to all the output files.  For multiple runs it helps keep track of each run.
+
+--tissue
+Default=""
+Description: Tissue or Tumor Type, used for additional filename prefix for large pancan runs
+
+
+
 ### What is Tackle Box?
 
 Tackle Box is the Docker image for running LURE. While it is possible to run the LURE code from directly within a local installation of R, we recommend running LURE from within Tackle Box.

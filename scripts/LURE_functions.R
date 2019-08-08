@@ -1,6 +1,7 @@
 ## LURE_functions.R
 ## David Haan 2015-2019
 ## Functions associated with LURE
+## Github Version
 
 
 
@@ -1280,4 +1281,109 @@ make_pancan_tumor_type_legend<- function() {
 }
 
 
+# orphaned function, but still used for it's "pos_set" functionality. Basically can create X and Y by just providing the list of positive samples in pos_set
+createXY_pos<- function(gene_name, mutation_file, expression_file, pos_set, mutation_type, cnv_data, fusion_data, pcawg_mutation_data) {
+  NA_pos_set<-""
+  # CREATE X AND Y 
+  if (is.na(pos_set[1])) {
+    NA_pos_set<-NA
+    if (is.na(mutation_type)) {
+      pos_set<-unique(mutation_file$Tumor_Sample_Barcode[which(mutation_file$Hugo_Symbol %in% gene_name & !(mutation_file$Variant_Classification %in% c("Intron","Silent","3'UTR","5'UTR","3'Flank","5'Flank","IGR")))])
+    } else {
+      if (mutation_type=="SNV")
+        pos_set<-unique(mutation_file$Tumor_Sample_Barcode[which(mutation_file$Hugo_Symbol %in% gene_name & (mutation_file$Variant_Classification %in% c("Missense_Mutation","Nonsense_Mutation","Frame_Shift_Del","Frame_Shift_Ins","Nonstop_Mutation")))])
+      else if (toupper(mutation_type)=="MISSENSE")
+        pos_set<-unique(mutation_file$Tumor_Sample_Barcode[which(mutation_file$Hugo_Symbol %in% gene_name & (mutation_file$Variant_Classification %in% c("Missense_Mutation")))])
+      else if (toupper(mutation_type)=="TRUNCATING")
+        pos_set<-unique(mutation_file$Tumor_Sample_Barcode[which(mutation_file$Hugo_Symbol %in% gene_name & (mutation_file$Variant_Classification %in% c("Nonsense_Mutation","Frame_Shift_Del","Frame_Shift_Ins","Nonstop_Mutation")))])
+      else if (toupper(mutation_type)=="SPLICESITE")
+        pos_set<-unique(mutation_file$Tumor_Sample_Barcode[which(mutation_file$Hugo_Symbol %in% gene_name & (mutation_file$Variant_Classification %in% c("Splice_Site")))])
+      else if (toupper(mutation_type)=="SPLICE")
+        pos_set<-unique(mutation_file$Tumor_Sample_Barcode[which(mutation_file$Hugo_Symbol %in% gene_name & (mutation_file$Variant_Classification %in% c("Splice_Site")))])
+      else if (toupper(mutation_type)=="AMP") {
+        #sample_names<-colnames(cnv_data)[2:length(colnames(cnv_data))] 
+        #colnames(cnv_data)[2:length(colnames(cnv_data))]<-gsub("-",".",strtrim(sample_names,12))
+        gene_data<-cnv_data[which(toupper(cnv_data$`Gene Symbol`) == toupper(gene_name)), ]
+        pos_set<-unique(colnames(gene_data)[which(gene_data %in% c(2))])
+      }
+      else if (toupper(mutation_type)=="DEL") {
+        print("Deletion Event")
+        #sample_names<-colnames(cnv_data)[2:length(colnames(cnv_data))] 
+        #colnames(cnv_data)[2:length(colnames(cnv_data))]<-gsub("-",".",strtrim(sample_names,12))
+        gene_data<-cnv_data[which(toupper(cnv_data$`Gene Symbol`) == toupper(gene_name)), ]
+        pos_set<-unique(colnames(gene_data)[which(gene_data %in% c(-2))])
+      }
+      else if (toupper(mutation_type)=="FUSION") {
+        print("Fusion Event")
+        sample_names<-as.character(fusion_data[which(toupper(fusion_data$X1) == toupper(gene)),3:ncol(fusion_data)])
+        pos_set<-sample_names[!(sample_names=="")]
+      }
+      else if (toupper(mutation_type)=="3UTR") {
+        full_gene_name<-paste0(gene_name,"(",mutation_type,")")
+        pos_set<-as.character(pcawg_mutation_data$V2[which(toupper(pcawg_mutation_data$gene)==full_gene_name)])
+      }
+      else if (toupper(mutation_type)=="5UTR") {
+        full_gene_name<-paste0(gene_name,"(",mutation_type,")")
+        pos_set<-as.character(pcawg_mutation_data$V2[which(toupper(pcawg_mutation_data$gene)==full_gene_name)])
+      }
+      else if (toupper(mutation_type)=="CDS") {
+        full_gene_name<-paste0(gene_name,"(",mutation_type,")")
+        pos_set<-as.character(pcawg_mutation_data$V2[which(toupper(pcawg_mutation_data$gene)==full_gene_name)])
+      }
+      else if (toupper(mutation_type)=="PROMCORE") {
+        full_gene_name<-paste0(gene_name,"(",mutation_type,")")
+        pos_set<-as.character(pcawg_mutation_data$V2[which(toupper(pcawg_mutation_data$gene)==full_gene_name)])
+      }
+      else if (toupper(mutation_type)=="ENH") {
+        full_gene_name<-paste0(gene_name,"(",mutation_type,")")
+        pos_set<-as.character(pcawg_mutation_data$V2[which(toupper(pcawg_mutation_data$gene)==full_gene_name)])
+      }
+      else if (toupper(mutation_type)=="PROMDOMAIN") {
+        full_gene_name<-paste0(gene_name,"(",mutation_type,")")
+        pos_set<-as.character(pcawg_mutation_data$V2[which(toupper(pcawg_mutation_data$gene)==full_gene_name)])
+      }
+      else {
+        print("Mutation Type not recognized")
+        return(list("X" = NA, "Y" = NA,"test" = NA, "X_total" = NA, "X_pos_num" = NA))
+        
+      }
+    }
+  }
+  
+  # new calculation for X_pos
+  X_pos<-expression_file[(row.names(expression_file) %in% pos_set) , ,drop=FALSE]
+  X_pos<-X_pos[!(is.na(rownames(X_pos))) , ,drop=FALSE]
+  old_X_pos<-X_pos
+  X_pos_num<-length(X_pos[,1])
+  
+  print(paste("Number of Positive Samples: ", length(X_pos[,1])))
+  # load negative training expression data for A
+  neg_set<-row.names(expression_file)[!(row.names(expression_file) %in% pos_set)]
+  X_neg<-expression_file[(row.names(expression_file) %in% neg_set) , ,drop=FALSE]
+  X_neg_num<-length(X_neg[,1])
+  print(paste("Number of Negative Samples: ", X_neg_num))
+  
+  X_total<-X_pos_num+X_neg_num
+  Y_pos<-data.frame(matrix(1,length(X_pos[,1]),1))
+  colnames(Y_pos)<-"sample"
+  rownames(Y_pos)<-(rownames(X_pos))
+  Y_neg<-data.frame(matrix(0,length(X_neg[,1]),1))
+  colnames(Y_neg)<-"sample"
+  rownames(Y_neg)<-(rownames(X_neg))
+  # combine pos and neg
+  X<-rbind(X_pos, X_neg)
+  Y<-rbind(Y_pos, Y_neg)
+  # here we set test to whatever is left
+  if (is.na(NA_pos_set)) {
+    #test<-expression_file[(row.names(expression_file) %in% unique(mutation_file$Tumor_Sample_Barcode)) , ]
+    test<- expression_file[ ((row.names(expression_file) %in% neg_set)) , ]
+  }
+  else
+    test<- expression_file[ (row.names(expression_file) %in% neg_set) , ]
+  
+  print(paste("Number of Remaining(test) Samples: ", length(test[,1])))
+  # return variables
+  # replace the period in rownames Y and replace with -
+  return(list("X" = X, "Y" = Y,"test" = test, "X_total" = X_total, "X_pos_num" = X_pos_num))
+}
 

@@ -9,3 +9,10 @@ COPY ./scripts /lure_scripts
 COPY ./running_LURE_from_TACKLE_BOX.md /
 
 ENTRYPOINT ["cat", "/running_LURE_from_TACKLE_BOX.md"]
+
+
+# copy example jobs
+RUN ["mkdir", "-p", "/example_jobs/"]
+COPY ./input /example_jobs/input
+COPY ./output /example_jobs/output
+COPY ./temp /example_jobs/temp

@@ -1,13 +1,16 @@
 #chrisw 20190709
 #build an image for running LURE
 
-FROM stuartlab/tackle_box:dev
+FROM stuartlab/tackle_box:env
 
+# copy LURE scripts
 RUN ["mkdir", "-p", "/lure_scripts/"]
 COPY ./scripts /lure_scripts
 
+# copy instructions
 COPY ./running_LURE_from_TACKLE_BOX.md /
 
+# default entrypoint prints instructions
 ENTRYPOINT ["cat", "/running_LURE_from_TACKLE_BOX.md"]
 
 

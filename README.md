@@ -8,6 +8,12 @@ LURE is a semi-supervised machine learning tool, Learning UnRealized Events (LUR
     bioRxiv 727891; doi: https://doi.org/10.1101/727891
 
 
+LURE was presented at [PSB 2020](https://psb.stanford.edu/psb-online/proceedings/psb20). The article is [here](https://psb.stanford.edu/psb-online/proceedings/psb20/Hann.pdf).
+
+
+	Haan, D., Tao, R., Friedl, V., Anastopoulos, I. N., Wong, C. K., Weinstein, A. S., & Stuart, J. M. (2020). Using Transcriptional Signatures to Find Cancer Drivers with LURE. Pacific Symposium on Biocomputing. Pacific Symposium on Biocomputing, 25, 343–354.
+
+
 The LURE website is [here](https://sysbiowiki.soe.ucsc.edu/lure).
 
 ---
@@ -57,8 +63,10 @@ To run LURE from Tackle Box, you'll need to have a specific directory structure 
 
 1. Get an interactive session in the Docker container with:
     ```
-    docker run -ti --entrypoint /bin/bash -v `pwd`:/data stuartlab/tackle_box
+    docker run -ti --entrypoint /bin/bash -v `pwd`:/data stuartlab/tackle_box:[version_number]
     ```
+
+	Get the version number that you want by visiting Tackle Box's Docker Hub page. You can find a link to it [here](https://sysbiowiki.soe.ucsc.edu/lure)
 
 
 2. Go to `/example_jobs` in the Docker container. This is the working directory for the example LURE jobs.

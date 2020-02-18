@@ -66,7 +66,7 @@ To run LURE from Tackle Box, you'll need to have a specific directory structure 
     docker run -ti --entrypoint /bin/bash -v `pwd`:/data stuartlab/tackle_box:[version_number]
     ```
 
-	Get the version number that you want by visiting Tackle Box's Docker Hub page. You can find a link to it [here](https://sysbiowiki.soe.ucsc.edu/lure)
+	Get the version number that you want by visiting Tackle Box's Docker Hub page. You can find a link to it [here](https://hub.docker.com/r/stuartlab/tackle_box/tags)
 
 
 2. Go to `/example_jobs` in the Docker container. This is the working directory for the example LURE jobs.
